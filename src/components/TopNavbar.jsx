@@ -10,10 +10,10 @@ export default function TopNavbar({ totalItems }) {
         <header className={styles.header}>
             <div className={styles.left}>
                 <Image
-                    src="/logo.jpg"
+                    src="/logo.png"
                     alt="Pintó la Gula"
-                    width={40}
-                    height={40}
+                    width={80}
+                    height={80}
                     className={styles.logo}
                     priority
                 />

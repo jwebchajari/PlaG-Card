@@ -1,16 +1,53 @@
 export const metadata = {
   title: "Pintó la Gula",
-  description: "Las mejores hamburguesas de Rosario, pedí fácil y rápido.",
+  description: "Las mejores hamburguesas de Chajarí. Pedí fácil, rápido y por WhatsApp.",
   manifest: "/manifest.json",
-  themeColor: "#facc15",
+
   icons: {
     icon: "/icons/icon-192.png",
     apple: "/icons/icon-192.png",
     shortcut: "/icons/icon-192.png"
-  }
+  },
+
+  openGraph: {
+    title: "Pintó la Gula – Las mejores hamburguesas de Chajarí",
+    description: "Pedí por WhatsApp. Delivery o retiro. Menú actualizado todos los días.",
+    url: "https://pla-g-card.vercel.app/",
+    siteName: "Pintó la Gula",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Pintó la Gula – Hamburguesas artesanales"
+      }
+    ],
+    locale: "es_AR",
+    type: "website"
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Pintó la Gula",
+    description: "Las mejores hamburguesas de Chajarí. Pedido rápido por WhatsApp.",
+    images: ["/og-image.jpg"],
+  },
+
+  keywords: [
+    "hamburguesas",
+    "comida rápida",
+    "Chajarí",
+    "delivery",
+    "pintó la gula",
+    "take away",
+    "hamburguesería"
+  ],
+  authors: [{ name: "Pintó la Gula" }],
 };
 
-
+export const viewport = {
+  themeColor: "#facc15",
+};
 
 import { Poppins } from "next/font/google";
 
@@ -19,25 +56,15 @@ const poppins = Poppins({
   weight: ["400", "600", "700"],
 });
 
-
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./globals.css";
-
 
 export default function RootLayout({ children }) {
   return (
     <html lang="es">
-      <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar" content="black-translucent" />
-        <meta name="theme-color" content="#facc15" />
-
-      </head>
       <body className={poppins.className}>
         {children}
       </body>
     </html>
-
   );
 }

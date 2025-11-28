@@ -8,6 +8,7 @@ import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import dummyProducts from "@/data/products";
 import MapModal from "@/components/MapModal";
+import AddToCartToast from "@/components/AddToCartToast";
 
 export default function Home() {
   const router = useRouter();
@@ -74,6 +75,9 @@ export default function Home() {
 
   /* ========================= CARRITO ========================= */
 
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastProduct, setToastProduct] = useState("");
+
   const addToCart = (product) => {
     setCartItems((prev) => {
       const exist = prev.find((i) => i.id === product.id);
@@ -84,7 +88,14 @@ export default function Home() {
       }
       return [...prev, { ...product, quantity: 1, notes: "" }];
     });
+
+    // 👇 Mostrar animación de agregado
+    setToastProduct(product.name);
+    setToastVisible(true);
+
+    setTimeout(() => setToastVisible(false), 1500);
   };
+
 
   /* ========================= SCROLL A SECCIONES ========================= */
 
@@ -107,6 +118,8 @@ export default function Home() {
   return (
     <>
       {/* 🔝 TOP NAVBAR */}
+      <AddToCartToast show={toastVisible} productName={toastProduct} />
+
       <TopNavbar
         totalItems={cartItems.reduce(
           (acc, item) => acc + item.quantity,
