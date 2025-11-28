@@ -1,0 +1,22 @@
+.footer {
+    background: #f7f7f7;
+    border-top: 1px solid #eaeaea;
+    text-align: center;
+}
+
+.title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #222;
+}
+
+.text {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.copy {
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #999;
+}

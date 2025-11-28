@@ -1,0 +1,47 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.modal {
+    background: #111;
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    width: 92%;
+    max-width: 500px;
+    position: relative;
+    text-align: center;
+}
+
+.closeBtn {
+    background: none;
+    border: none;
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    color: #fff;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+
+.modalImg {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+}
+
+.title {
+    font-size: 1.3rem;
+    margin-bottom: 0.3rem;
+}
+
+.desc {
+    font-size: 0.95rem;
+    opacity: 0.8;
+}

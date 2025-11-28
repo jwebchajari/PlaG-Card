@@ -1,0 +1,44 @@
+.nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #ffffff;
+  border-top: 1px solid #eaeaea;
+  padding: 8px 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 90;
+  transition: all 0.25s ease;
+}
+
+.expandedNav {
+  padding-bottom: 22px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #666;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.active {
+  color: #ffb800;
+  font-weight: 600;
+}
+
+.expandBtn {
+  background: #ffb800;
+  border: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-left: 4px;
+}

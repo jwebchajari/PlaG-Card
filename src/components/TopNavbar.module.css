@@ -1,0 +1,45 @@
+.header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 99;
+    background: #fff;
+    padding: 10px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+}
+
+.left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.cartBtn {
+    background: #ffb800;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ff4d4d;
+    width: 18px;
+    height: 18px;
+    font-size: 0.7rem;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: white;
+}
