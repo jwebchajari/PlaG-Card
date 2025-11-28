@@ -11,16 +11,16 @@ export default function TopNavbar({ totalItems, openCart }) {
                 <Image
                     src="/logo.jpg"
                     alt="Pintó la Gula"
-                    width={36}
-                    height={36}
+                    width={44}
+                    height={44}
                     className={styles.logo}
                     priority
                 />
-                <h3>Pintó la gula</h3>
+                <h1 className={styles.brand}>Pintó la gula</h1>
             </div>
 
             <button className={styles.cartBtn} onClick={openCart}>
-                <Icon icon="lucide:shopping-cart" width={24} />
+                <Icon icon="lucide:shopping-cart" width={22} />
                 {totalItems > 0 && <span className={styles.badge}>{totalItems}</span>}
             </button>
         </header>

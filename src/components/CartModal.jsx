@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button, Form, Alert } from "react-bootstrap";
 import { Icon } from "@iconify/react";
 import styles from "./CartModal.module.css";
 
@@ -16,6 +16,58 @@ export default function CartModal({
 	const [metodo, setMetodo] = useState("retiro");
 	const [direccion, setDireccion] = useState("");
 	const [obsEntrega, setObsEntrega] = useState("");
+	const [sending, setSending] = useState(false);
+	const [errorMsg, setErrorMsg] = useState("");
+
+	const telefono = "5493412275598";
+
+	/* ============================================================
+	   MOSTRAR ERROR ELEGANTE (NO alert())
+	=============================================================== */
+	const showError = (msg) => {
+		setErrorMsg(msg);
+		setTimeout(() => setErrorMsg(""), 2500);
+	};
+
+	/* ============================================================
+	   ENVIAR WHATSAPP
+	=============================================================== */
+	const sendWhatsappOrder = () => {
+		// Validaciones bonitas
+		if (!nombre.trim()) return showError("Por favor ingresá tu nombre.");
+
+		if (metodo === "envio" && !direccion.trim())
+			return showError("Ingresá tu dirección para el envío.");
+
+		setSending(true);
+
+		let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
+		mensaje += `👤 *Cliente:* ${nombre}%0A`;
+		mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"}%0A`;
+
+		if (metodo === "envio") {
+			mensaje += `🏠 *Dirección:* ${direccion}%0A`;
+			if (obsEntrega.trim())
+				mensaje += `📌 *Observaciones:* ${obsEntrega}%0A`;
+		}
+
+		mensaje += `%0A*Detalle del pedido:*%0A`;
+		cartItems.forEach(item => {
+			mensaje += `• ${item.quantity} x ${item.name} — $${(item.price * item.quantity).toFixed(2)}%0A`;
+			if (item.notes?.trim())
+				mensaje += `  📝 Nota: ${item.notes}%0A`;
+		});
+
+		mensaje += `%0A💵 *Total:* $${totalPrice.toFixed(2)}%0A`;
+
+		const url = `https://wa.me/${telefono}?text=${mensaje}`;
+		window.open(url, "_blank");
+
+		setTimeout(() => {
+			setSending(false);
+			onClose();
+		}, 800);
+	};
 
 	return (
 		<Modal show={show} onHide={onClose} centered size="lg">
@@ -24,6 +76,13 @@ export default function CartModal({
 			</Modal.Header>
 
 			<Modal.Body className={styles.body}>
+				{/* ALERTA ELEGANTE */}
+				{errorMsg && (
+					<Alert variant="danger" className="py-2">
+						{errorMsg}
+					</Alert>
+				)}
+
 				{cartItems.length === 0 ? (
 					<div className={styles.empty}>
 						<Icon icon="lucide:shopping-bag" width={50} className="mb-3 text-muted" />
@@ -33,6 +92,7 @@ export default function CartModal({
 					</div>
 				) : (
 					<>
+						{/* LISTA DE PRODUCTOS */}
 						<div className={styles.items}>
 							{cartItems.map(item => (
 								<div key={item.id} className={styles.item}>
@@ -85,11 +145,13 @@ export default function CartModal({
 
 						<hr />
 
+						{/* TOTAL */}
 						<div className={styles.totalRow}>
 							<h5>Total:</h5>
 							<h5>${totalPrice.toFixed(2)}</h5>
 						</div>
 
+						{/* DATOS DEL CLIENTE */}
 						<div className="mt-3">
 							<Form.Label>Tu nombre</Form.Label>
 							<Form.Control
@@ -138,9 +200,23 @@ export default function CartModal({
 					<Button variant="secondary" onClick={onClose}>
 						Seguir comprando
 					</Button>
-					<Button className={styles.whatsappBtn}>
-						<Icon icon="logos:whatsapp-icon" width={22} className="me-2" />
-						Enviar pedido
+
+					<Button
+						className={styles.whatsappBtn}
+						onClick={sendWhatsappOrder}
+						disabled={sending}
+					>
+						{sending ? (
+							<>
+								<span className="spinner-border spinner-border-sm me-2" />
+								Enviando...
+							</>
+						) : (
+							<>
+								<Icon icon="logos:whatsapp-icon" width={22} className="me-2" />
+								Enviar pedido
+							</>
+						)}
 					</Button>
 				</Modal.Footer>
 			)}

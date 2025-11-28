@@ -7,19 +7,50 @@ import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import dummyProducts from "@/data/products";
 import MapModal from "@/components/MapModal";
+import CartModal from "@/components/CartModal";
 
 export default function Home() {
+  /* ========================= ESTADOS ========================= */
   const [activeTab, setActiveTab] = useState("hamburguesas");
   const [expanded, setExpanded] = useState(false);
-  const [showMap, setShowMap] = useState(false); // ✅ AGREGADO
-  const [cartItems, setCartItems] = useState([]);
+  const [showMap, setShowMap] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
 
-  // REFERENCIAS DE SECCIONES PARA SCROLL
+  /* ========================= LOCAL STORAGE (3 HORAS) ========================= */
+
+  useEffect(() => {
+    const stored = localStorage.getItem("cartData");
+    if (stored) {
+      const { items, timestamp } = JSON.parse(stored);
+      const diff = Date.now() - timestamp;
+      const limit = 3 * 60 * 60 * 1000; // 3 horas
+
+      if (diff < limit) {
+        setCartItems(items);
+      } else {
+        localStorage.removeItem("cartData");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      localStorage.setItem(
+        "cartData",
+        JSON.stringify({ items: cartItems, timestamp: Date.now() })
+      );
+    } else {
+      localStorage.removeItem("cartData");
+    }
+  }, [cartItems]);
+
+  /* ========================= REFERENCIAS SCROLL ========================= */
   const hamburguesasRef = useRef(null);
   const sandwichRef = useRef(null);
   const papasRef = useRef(null);
   const bebidasRef = useRef(null);
+  const firstScroll = useRef(true); // 👈 para evitar scroll en primer render
 
   const refs = {
     hamburguesas: hamburguesasRef,
@@ -28,41 +59,87 @@ export default function Home() {
     bebidas: bebidasRef,
   };
 
+  /* ========================= CARRITO ========================= */
+
   const addToCart = (product) => {
-    setCartItems((prev) => [...prev, { ...product, quantity: 1 }]);
+    setCartItems((prev) => {
+      const exist = prev.find((i) => i.id === product.id);
+      if (exist) {
+        return prev.map((i) =>
+          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
+        );
+      }
+      return [...prev, { ...product, quantity: 1, notes: "" }];
+    });
   };
 
-  // CUANDO CAMBIA LA TAB → SCROLLEAR A LA SECCIÓN
+  const updateCartItemQuantity = (id, newQuantity) => {
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+      )
+    );
+  };
+
+  const updateCartItemNotes = (id, notes) => {
+    setCartItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, notes } : item))
+    );
+  };
+
+  const removeCartItem = (id) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const totalPrice = cartItems.reduce(
+    (t, item) => t + item.price * item.quantity,
+    0
+  );
+
+  /* ========================= SCROLL A SECCIONES ========================= */
+
   useEffect(() => {
-    const element = refs[activeTab]?.current;
-    if (element) {
+    // saltar la primera vez (cuando carga la página)
+    if (firstScroll.current) {
+      firstScroll.current = false;
+      return;
+    }
+
+    const section = refs[activeTab]?.current;
+    if (section) {
       window.scrollTo({
-        top: element.offsetTop - 80,
+        top: section.offsetTop - 80,
         behavior: "smooth",
       });
     }
   }, [activeTab]);
 
+  /* ========================= RENDER ========================= */
+
   return (
     <>
-      {/* ================= TOP NAVBAR ================= */}
-      <TopNavbar totalItems={cartItems.length} openCart={() => setShowCart(true)} />
+      {/* TOP NAVBAR */}
+      <TopNavbar
+        totalItems={cartItems.length}
+        openCart={() => setShowCart(true)}
+      />
 
-      <main className="container mt-3 mb-5 pb-5">
-
-        {/* ================= HORARIOS ================= */}
-        <section className="mt-4 mb-4">
+      <main
+        className="container mb-5 pb-5"
+        style={{ paddingTop: "72px", marginTop: "12px" }} // 👈 compensar navbar fijo
+      >
+        {/* HORARIOS */}
+        <section className="mt-2 mb-4">
           <h2 className="section-title">Horarios de atención</h2>
           <p className="text-muted">
-            Lunes a Viernes: <strong>12:00 - 23:00</strong><br />
+            Lunes a Viernes: <strong>12:00 - 23:00</strong>
+            <br />
             Sábados y Domingos: <strong>13:00 - 00:00</strong>
           </p>
         </section>
 
-        {/* ================= HERO ACTIONS ================= */}
+        {/* HERO ACTIONS */}
         <div className="d-flex flex-column flex-md-row gap-3 mb-4">
-
-          {/* MOBILE + DESKTOP: ABRIR MODAL DE MAPA */}
           <button
             className="btn btn-warning flex-grow-1 py-3 fw-semibold"
             onClick={() => setShowMap(true)}
@@ -70,7 +147,6 @@ export default function Home() {
             📍 Ver dónde retirar / Cómo llegar
           </button>
 
-          {/* SOLO ESCRITORIO: LINK DIRECTO A GOOGLE MAPS */}
           <a
             href="https://www.google.com/maps/search/?api=1&query=Repetto+2280+Rosario"
             target="_blank"
@@ -80,38 +156,55 @@ export default function Home() {
           </a>
         </div>
 
-        {/* ================= HAMBURGUESAS ================= */}
+        {/* Hamburguesas */}
         <section ref={hamburguesasRef} id="hamburguesas">
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList addToCart={addToCart} products={dummyProducts.hamburguesas} />
+          <ProductList
+            addToCart={addToCart}
+            products={dummyProducts.hamburguesas}
+          />
         </section>
 
-        {/* ================= SANDWICHES ================= */}
+        {/* Sandwiches */}
         <section ref={sandwichRef} id="sandwich">
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
-          <ProductList addToCart={addToCart} products={dummyProducts.sandwiches} />
+          <ProductList
+            addToCart={addToCart}
+            products={dummyProducts.sandwiches}
+          />
         </section>
 
-        {/* ================= PAPAS ================= */}
+        {/* Papas */}
         <section ref={papasRef} id="papas">
           <h2 className="section-title mb-3 mt-5">Papas</h2>
           <ProductList addToCart={addToCart} products={dummyProducts.papas} />
         </section>
 
-        {/* ================= BEBIDAS ================= */}
+        {/* Bebidas */}
         <section ref={bebidasRef} id="bebidas">
           <h2 className="section-title mb-3 mt-5">Bebidas</h2>
           <ProductList addToCart={addToCart} products={dummyProducts.bebidas} />
         </section>
       </main>
 
-      {/* ================= MODAL DE MAPA ================= */}
+      {/* MODAL MAPA */}
       <MapModal show={showMap} onClose={() => setShowMap(false)} />
 
-      {/* ================= MENU EXPANDIDO ================= */}
+      {/* MODAL CARRITO */}
+      <CartModal
+        show={showCart}
+        onClose={() => setShowCart(false)}
+        cartItems={cartItems}
+        updateCartItemNotes={updateCartItemNotes}
+        updateCartItemQuantity={updateCartItemQuantity}
+        removeCartItem={removeCartItem}
+        totalPrice={totalPrice}
+      />
+
+      {/* MENÚ EXPANDIDO */}
       <ExpandedMenu show={expanded} onClose={() => setExpanded(false)} />
 
-      {/* ================= BOTTOM NAV ================= */}
+      {/* BOTTOM NAVBAR */}
       <BottomNavbar
         active={activeTab}
         setActive={setActiveTab}
