@@ -1,44 +1,56 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import TopNavbar from "@/components/TopNavbar";
 import BottomNavbar from "@/components/BottomNavbar";
 import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import dummyProducts from "@/data/products";
 import MapModal from "@/components/MapModal";
-import CartModal from "@/components/CartModal";
 
 export default function Home() {
+  const router = useRouter();
+
   /* ========================= ESTADOS ========================= */
   const [activeTab, setActiveTab] = useState("hamburguesas");
   const [expanded, setExpanded] = useState(false);
   const [showMap, setShowMap] = useState(false);
-  const [showCart, setShowCart] = useState(false);
   const [cartItems, setCartItems] = useState([]);
 
   /* ========================= LOCAL STORAGE (3 HORAS) ========================= */
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const stored = localStorage.getItem("cartData");
     if (stored) {
-      const { items, timestamp } = JSON.parse(stored);
-      const diff = Date.now() - timestamp;
-      const limit = 3 * 60 * 60 * 1000; // 3 horas
+      try {
+        const { items, timestamp } = JSON.parse(stored);
+        const diff = Date.now() - timestamp;
+        const limit = 3 * 60 * 60 * 1000; // 3 hs
 
-      if (diff < limit) {
-        setCartItems(items);
-      } else {
+        if (diff < limit && Array.isArray(items)) {
+          setCartItems(items);
+        } else {
+          localStorage.removeItem("cartData");
+        }
+      } catch {
         localStorage.removeItem("cartData");
       }
     }
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     if (cartItems.length > 0) {
       localStorage.setItem(
         "cartData",
-        JSON.stringify({ items: cartItems, timestamp: Date.now() })
+        JSON.stringify({
+          items: cartItems,
+          timestamp: Date.now(),
+        })
       );
     } else {
       localStorage.removeItem("cartData");
@@ -46,11 +58,12 @@ export default function Home() {
   }, [cartItems]);
 
   /* ========================= REFERENCIAS SCROLL ========================= */
+
   const hamburguesasRef = useRef(null);
   const sandwichRef = useRef(null);
   const papasRef = useRef(null);
   const bebidasRef = useRef(null);
-  const firstScroll = useRef(true); // 👈 para evitar scroll en primer render
+  const firstScroll = useRef(true);
 
   const refs = {
     hamburguesas: hamburguesasRef,
@@ -73,38 +86,13 @@ export default function Home() {
     });
   };
 
-  const updateCartItemQuantity = (id, newQuantity) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
-      )
-    );
-  };
-
-  const updateCartItemNotes = (id, notes) => {
-    setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, notes } : item))
-    );
-  };
-
-  const removeCartItem = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const totalPrice = cartItems.reduce(
-    (t, item) => t + item.price * item.quantity,
-    0
-  );
-
   /* ========================= SCROLL A SECCIONES ========================= */
 
   useEffect(() => {
-    // saltar la primera vez (cuando carga la página)
     if (firstScroll.current) {
       firstScroll.current = false;
       return;
     }
-
     const section = refs[activeTab]?.current;
     if (section) {
       window.scrollTo({
@@ -118,15 +106,17 @@ export default function Home() {
 
   return (
     <>
-      {/* TOP NAVBAR */}
+      {/* 🔝 TOP NAVBAR */}
       <TopNavbar
-        totalItems={cartItems.length}
-        openCart={() => setShowCart(true)}
+        totalItems={cartItems.reduce(
+          (acc, item) => acc + item.quantity,
+          0
+        )}
       />
 
       <main
         className="container mb-5 pb-5"
-        style={{ paddingTop: "72px", marginTop: "12px" }} // 👈 compensar navbar fijo
+        style={{ paddingTop: "72px", marginTop: "12px" }}
       >
         {/* HORARIOS */}
         <section className="mt-2 mb-4">
@@ -183,23 +173,15 @@ export default function Home() {
         {/* Bebidas */}
         <section ref={bebidasRef} id="bebidas">
           <h2 className="section-title mb-3 mt-5">Bebidas</h2>
-          <ProductList addToCart={addToCart} products={dummyProducts.bebidas} />
+          <ProductList
+            addToCart={addToCart}
+            products={dummyProducts.bebidas}
+          />
         </section>
       </main>
 
       {/* MODAL MAPA */}
       <MapModal show={showMap} onClose={() => setShowMap(false)} />
-
-      {/* MODAL CARRITO */}
-      <CartModal
-        show={showCart}
-        onClose={() => setShowCart(false)}
-        cartItems={cartItems}
-        updateCartItemNotes={updateCartItemNotes}
-        updateCartItemQuantity={updateCartItemQuantity}
-        removeCartItem={removeCartItem}
-        totalPrice={totalPrice}
-      />
 
       {/* MENÚ EXPANDIDO */}
       <ExpandedMenu show={expanded} onClose={() => setExpanded(false)} />
