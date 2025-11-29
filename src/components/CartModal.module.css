@@ -1,8 +1,27 @@
+/********************************************
+ * 🔥 BODY DEL MODAL
+ ********************************************/
 .body {
     max-height: 70vh;
     overflow-y: auto;
+    padding-right: 4px;
+
+    background: var(--surface-1);
+    color: var(--color-text-main);
 }
 
+/********************************************
+ * 😢 MODAL EMPTY
+ ********************************************/
+.empty {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--color-text-main);
+}
+
+/********************************************
+ * 🛒 LISTA DE ITEMS
+ ********************************************/
 .items {
     display: flex;
     flex-direction: column;
@@ -13,7 +32,7 @@
     display: flex;
     gap: 12px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #eaeaea;
+    border-bottom: 1px solid var(--color-border-soft);
     position: relative;
 }
 
@@ -22,45 +41,100 @@
     height: 80px;
     border-radius: 12px;
     object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .name {
     font-weight: 700;
     margin: 0;
+    color: var(--color-primary-dark);
 }
 
 .sub {
     font-size: 0.9rem;
-    color: #666;
+    color: var(--color-text-muted);
 }
 
+/********************************************
+ * 🗑 BOTÓN ELIMINAR (red suave)
+ ********************************************/
 .delete {
     position: absolute;
     right: 0;
     top: 0;
     background: none;
     border: none;
-    color: #ff4d4d;
+    color: #E04545;
+    transition: transform .2s ease;
 }
 
+.delete:hover {
+    transform: scale(1.12);
+}
+
+/********************************************
+ * 💵 TOTAL
+ ********************************************/
 .totalRow {
     display: flex;
     justify-content: space-between;
     font-weight: 700;
+    color: var(--color-primary-dark);
+    margin-top: 0.5rem;
 }
 
+/********************************************
+ * 📦 FOOTER
+ ********************************************/
 .footer {
     display: flex;
     justify-content: space-between;
+    align-items: center;
+    background: var(--surface-1);
+    border-top: 1px solid var(--color-border-soft);
 }
 
+/********************************************
+ * 🟢 BOTÓN WHATSAPP (light theme)
+ ********************************************/
 .whatsappBtn {
-    background: #25d366;
-    border: none;
-    padding: 8px 16px;
+    background: var(--color-accent) !important;
+    border: none !important;
+
+    padding: 10px 18px;
+    color: white;
+    font-weight: 700;
+
+    border-radius: var(--radius-pill);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    transition: background .2s ease, transform .2s ease;
 }
 
+.whatsappBtn:hover {
+    background: #1fb978 !important;
+    transform: translateY(-2px);
+}
+
+/********************************************
+ * ⚠ ALERTA DE ERROR (light mode)
+ ********************************************/
 .alert {
     font-size: 0.9rem;
+    border-radius: 12px;
+
+    background: rgba(255, 90, 90, 0.1);
+    color: #c62828;
+    border: 1px solid rgba(255, 90, 90, 0.25);
+}
+
+/********************************************
+ * 🧹 SCROLL DEL BODY
+ ********************************************/
+.body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.body::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.15);
     border-radius: 10px;
 }

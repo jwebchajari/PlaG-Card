@@ -1,4 +1,4 @@
-/* BARRA INFERIOR */
+/* 🔥 BARRA INFERIOR */
 .nav {
   position: fixed;
   bottom: 0;
@@ -6,9 +6,10 @@
   right: 0;
 
   height: 75px;
-  background: #ffffff;
-  border-top: 1px solid #ddd;
-  box-shadow: 0 -3px 12px rgba(0,0,0,0.1);
+  background: var(--color-primary-dark);
+  /* Morado profundo */
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 -3px 20px rgba(0, 0, 0, 0.35);
 
   display: flex;
   justify-content: space-around;
@@ -17,43 +18,50 @@
   z-index: 9999;
 }
 
-/* CADA BOTÓN */
+/* 🔘 TAB BUTTON */
 .tab {
   background: none;
   border: none;
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #666;
+
+  color: var(--color-text-muted);
+  /* Gris espacial */
   font-size: 0.75rem;
   cursor: pointer;
+
+  transition: color 0.2s ease;
 }
 
 .active {
-  color: #facc15;
+  color: #fff;
+  /* Verde neón */
   font-weight: 700;
 }
 
-/* BOTÓN FLECHITA */
+/* ⬆ BOTÓN EXPANDIR */
 .expandBtn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #444;
+  color: #fff;
 }
 
-/* PANEL EXPANDIDO */
+/* 📂 PANEL EXPANDIDO */
 .expandPanel {
   position: fixed;
   bottom: 75px;
   left: 0;
   right: 0;
 
-  background: #fff;
+  background: var(--color-bg-alt);
+  /* Blanco */
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
 
-  box-shadow: 0 -4px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.35);
 
   padding: 20px 16px;
   transform: translateY(100%);
@@ -66,35 +74,43 @@
   transform: translateY(0);
 }
 
-/* PANEL - CONTENIDO */
+/* 📝 PANEL - TEXTO */
 .panelTitle {
   font-weight: 700;
+  color: var(--color-primary-dark);
   margin-bottom: 16px;
 }
 
+/* 🔧 OPCIONES DEL PANEL */
 .optionRow,
 .optionRowLink {
   display: flex;
   gap: 10px;
   align-items: center;
-  background: #f5f5f5;
+
+  background: rgba(0, 0, 0, 0.05);
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 10px;
+
   text-decoration: none;
-  color: #222;
+  color: var(--color-text-main);
+
+  transition: background 0.2s ease;
 }
 
 .optionRowLink:hover {
-  background: #ececec;
+  background: rgba(0, 0, 0, 0.08);
 }
 
-/* BOTÓN CONTRAER */
+/* 🔻 BOTÓN CONTRAER */
 .closeBtn {
   background: none;
   border: none;
-  color: #444;
+  color: var(--color-secondary);
+  /* Naranja pan */
   margin-top: 12px;
+
   display: flex;
   align-items: center;
   gap: 4px;

@@ -9,6 +9,7 @@ import ProductList from "@/components/ProductList";
 import dummyProducts from "@/data/products";
 import MapModal from "@/components/MapModal";
 import AddToCartToast from "@/components/AddToCartToast";
+import styles from "./Home.module.css";
 
 export default function Home() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export default function Home() {
   const [showMap, setShowMap] = useState(false);
   const [cartItems, setCartItems] = useState([]);
 
-  /* ========================= LOCAL STORAGE (3 HORAS) ========================= */
+  /* ========================= LOCAL STORAGE ========================= */
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -29,7 +30,7 @@ export default function Home() {
       try {
         const { items, timestamp } = JSON.parse(stored);
         const diff = Date.now() - timestamp;
-        const limit = 3 * 60 * 60 * 1000; // 3 hs
+        const limit = 3 * 60 * 60 * 1000;
 
         if (diff < limit && Array.isArray(items)) {
           setCartItems(items);
@@ -58,7 +59,7 @@ export default function Home() {
     }
   }, [cartItems]);
 
-  /* ========================= REFERENCIAS SCROLL ========================= */
+  /* ========================= SCROLL ========================= */
 
   const hamburguesasRef = useRef(null);
   const sandwichRef = useRef(null);
@@ -73,7 +74,7 @@ export default function Home() {
     bebidas: bebidasRef,
   };
 
-  /* ========================= CARRITO ========================= */
+  /* ========================= TOAST ADD CART ========================= */
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastProduct, setToastProduct] = useState("");
@@ -89,15 +90,13 @@ export default function Home() {
       return [...prev, { ...product, quantity: 1, notes: "" }];
     });
 
-    // 👇 Mostrar animación de agregado
     setToastProduct(product.name);
     setToastVisible(true);
 
     setTimeout(() => setToastVisible(false), 1500);
   };
 
-
-  /* ========================= SCROLL A SECCIONES ========================= */
+  /* ========================= SCROLL TO SECTION ========================= */
 
   useEffect(() => {
     if (firstScroll.current) {
@@ -117,34 +116,26 @@ export default function Home() {
 
   return (
     <>
-      {/* 🔝 TOP NAVBAR */}
       <AddToCartToast show={toastVisible} productName={toastProduct} />
 
       <TopNavbar
-        totalItems={cartItems.reduce(
-          (acc, item) => acc + item.quantity,
-          0
-        )}
+        totalItems={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
       />
 
-      <main
-        className="container mb-5 pb-5"
-        style={{ paddingTop: "72px", marginTop: "12px" }}
-      >
-        {/* HORARIOS */}
-        <section className="mt-2 mb-4">
-          <h2 className="section-title">Horarios de atención</h2>
-          <p className="text-muted">
-            Lunes a Viernes: <strong>12:00 - 23:00</strong>
-            <br />
-            Sábados y Domingos: <strong>13:00 - 00:00</strong>
-          </p>
-        </section>
+      <main className="container mb-5 pb-5" style={{ paddingTop: "72px" }}>
+        
+        {/* ⭐ HERO SECTION — NUEVO */}
+        <div className={styles.heroCard}>
+          <div className={styles.hoursBlock}>
+            <h2 className={styles.heroTitle}>Horarios de atención</h2>
+            <p className={styles.hoursText}>
+              Lunes a Viernes: <strong>12:00 - 23:00</strong><br/>
+              Sábados y Domingos: <strong>13:00 - 00:00</strong>
+            </p>
+          </div>
 
-        {/* HERO ACTIONS */}
-        <div className="d-flex flex-column flex-md-row gap-3 mb-4">
           <button
-            className="btn btn-warning flex-grow-1 py-3 fw-semibold"
+            className={styles.heroBtn}
             onClick={() => setShowMap(true)}
           >
             📍 Ver dónde retirar / Cómo llegar
@@ -153,53 +144,41 @@ export default function Home() {
           <a
             href="https://www.google.com/maps/search/?api=1&query=Repetto+2280+Rosario"
             target="_blank"
-            className="btn btn-outline-dark d-none d-md-block py-3 px-4 fw-semibold"
+            className={`${styles.heroBtnOutline} d-none d-md-block fw-semibold`}
           >
             🚗 Abrir en Google Maps
           </a>
         </div>
 
-        {/* Hamburguesas */}
+        {/* Sección: Hamburguesas */}
         <section ref={hamburguesasRef} id="hamburguesas">
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList
-            addToCart={addToCart}
-            products={dummyProducts.hamburguesas}
-          />
+          <ProductList addToCart={addToCart} products={dummyProducts.hamburguesas} />
         </section>
 
-        {/* Sandwiches */}
+        {/* Sección: Sandwiches */}
         <section ref={sandwichRef} id="sandwich">
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
-          <ProductList
-            addToCart={addToCart}
-            products={dummyProducts.sandwiches}
-          />
+          <ProductList addToCart={addToCart} products={dummyProducts.sandwiches} />
         </section>
 
-        {/* Papas */}
+        {/* Sección: Papas */}
         <section ref={papasRef} id="papas">
           <h2 className="section-title mb-3 mt-5">Papas</h2>
           <ProductList addToCart={addToCart} products={dummyProducts.papas} />
         </section>
 
-        {/* Bebidas */}
+        {/* Sección: Bebidas */}
         <section ref={bebidasRef} id="bebidas">
           <h2 className="section-title mb-3 mt-5">Bebidas</h2>
-          <ProductList
-            addToCart={addToCart}
-            products={dummyProducts.bebidas}
-          />
+          <ProductList addToCart={addToCart} products={dummyProducts.bebidas} />
         </section>
+
       </main>
 
-      {/* MODAL MAPA */}
       <MapModal show={showMap} onClose={() => setShowMap(false)} />
-
-      {/* MENÚ EXPANDIDO */}
       <ExpandedMenu show={expanded} onClose={() => setExpanded(false)} />
 
-      {/* BOTTOM NAVBAR */}
       <BottomNavbar
         active={activeTab}
         setActive={setActiveTab}

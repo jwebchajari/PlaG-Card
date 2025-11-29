@@ -4,16 +4,18 @@ import { Modal, Button } from "react-bootstrap";
 import styles from "./MapModal.module.css";
 
 export default function MapModal({ show, onClose }) {
-    const direccion = "Repetto 2280, Rosario, Argentina";
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+    const direccion = "repetto 2255, Chajari, Entre Ríos, Argentina";
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        direccion
+    )}`;
 
     return (
         <Modal show={show} onHide={onClose} centered size="lg">
-            <Modal.Header closeButton>
-                <Modal.Title>Cómo llegar</Modal.Title>
+            <Modal.Header closeButton className={styles.header}>
+                <Modal.Title className={styles.title}>Cómo llegar</Modal.Title>
             </Modal.Header>
 
-            <Modal.Body>
+            <Modal.Body className={styles.body}>
                 <p className={styles.label}>
                     Dirección: <strong>{direccion}</strong>
                 </p>
@@ -22,22 +24,27 @@ export default function MapModal({ show, onClose }) {
                     <iframe
                         width="100%"
                         height="300"
-                        style={{ border: 0, borderRadius: "12px" }}
                         loading="lazy"
                         allowFullScreen
-                        src={`https://www.google.com/maps/embed/v1/search?q=${encodeURIComponent(
-                            direccion
-                        )}&key=AIzaSyDUMMYKEY123456789`}
+                        style={{ border: 0, borderRadius: "12px" }}
+                        src={`https://www.google.com/maps?q=${encodeURIComponent(
+                            "Adolfo Repetto 2255, E3228ALY Chajarí, Entre Ríos"
+                        )}&output=embed`}
                     ></iframe>
                 </div>
+
             </Modal.Body>
 
-            <Modal.Footer>
-                <a href={mapsUrl} target="_blank" className="btn btn-warning">
+            <Modal.Footer className={styles.footer}>
+                <a
+                    href={mapsUrl}
+                    target="_blank"
+                    className={styles.mapsBtn}
+                >
                     Abrir en Google Maps
                 </a>
 
-                <Button variant="secondary" onClick={onClose}>
+                <Button variant="secondary" className={styles.closeBtn} onClick={onClose}>
                     Cerrar
                 </Button>
             </Modal.Footer>

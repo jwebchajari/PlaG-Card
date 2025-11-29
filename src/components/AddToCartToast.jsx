@@ -6,7 +6,8 @@ export default function AddToCartToast({ show, productName }) {
 
     return (
         <div className={styles.toast}>
-            ✅ <strong>{productName}</strong> añadido al carrito
+            <span className={styles.icon}>✅</span>
+            <strong>{productName}</strong> añadido al carrito
         </div>
     );
 }
