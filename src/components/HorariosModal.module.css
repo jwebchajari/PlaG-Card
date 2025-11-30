@@ -1,0 +1,120 @@
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 2000;
+}
+
+.modal {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 22px;
+    animation: fadeIn 0.25s ease-out;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.fadeIn {
+    animation: fadeIn 0.25s ease-out;
+}
+
+.title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.list {
+    margin: 0;
+    padding: 0;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 4px;
+    border-bottom: 1px solid #eee;
+    font-size: 1rem;
+}
+
+.day {
+    font-weight: 600;
+    color: #333;
+}
+
+.time {
+    font-weight: 500;
+}
+
+.closed {
+    color: #e53935;
+    font-weight: 600;
+}
+
+.closeBtn {
+    margin-top: 18px;
+    width: 100%;
+    padding: 12px 0;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    background: #000;
+    color: #fff;
+    transition: 0.2s ease;
+}
+
+.closeBtn:hover {
+    background: #333;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dia {
+    font-weight: bold;
+}
+
+.cerrado {
+    color: red;
+    font-weight: bold;
+}
+
+.sinTurnos {
+    color: #777;
+    font-style: italic;
+}
+
+.turnos {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    font-weight: 500;
+}

@@ -12,6 +12,11 @@ export default function ComprarPage() {
     const [cartItems, setCartItems] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    /* ====================== DATOS DEL LOCAL ====================== */
+    const [localWhatsapp, setLocalWhatsapp] = useState("");
+    const [localDireccion, setLocalDireccion] = useState("");
+
+    /* ====================== FORM ====================== */
     const [nombre, setNombre] = useState("");
     const [metodo, setMetodo] = useState("retiro");
     const [direccion, setDireccion] = useState("");
@@ -19,33 +24,71 @@ export default function ComprarPage() {
     const [sending, setSending] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const telefono = "5493412275598";
+    /* =====================================================
+       Cargar datos del local
+    ===================================================== */
+    useEffect(() => {
+        async function load() {
+            try {
+                const res = await fetch("/api/locales/datos");
+                const data = await res.json();
 
-    /* -------- CARGAR CARRITO -------- */
+                setLocalWhatsapp(data.whatsapp || "");
+                setLocalDireccion(data.direccion || "");
+            } catch (err) {
+                console.error("Error cargando datos del local:", err);
+            }
+        }
+
+        load();
+    }, []);
+
+    /* =====================================================
+       Cargar carrito y NORMALIZARLO
+    ===================================================== */
     useEffect(() => {
         if (typeof window === "undefined") return;
 
         const stored = localStorage.getItem("cartData");
-        if (stored) {
-            try {
-                const { items, timestamp } = JSON.parse(stored);
-                const diff = Date.now() - timestamp;
-                const limit = 3 * 60 * 60 * 1000; 
+        if (!stored) {
+            setLoading(false);
+            return;
+        }
 
-                if (diff < limit && Array.isArray(items) && items.length > 0) {
-                    setCartItems(items);
-                } else {
-                    localStorage.removeItem("cartData");
-                }
-            } catch {
+        try {
+            const { items, timestamp } = JSON.parse(stored);
+            const diff = Date.now() - timestamp;
+            const limit = 3 * 60 * 60 * 1000;
+
+            if (!Array.isArray(items) || diff > limit) {
                 localStorage.removeItem("cartData");
+                setLoading(false);
+                return;
             }
+
+            /* 🔥 NORMALIZAR CADA PRODUCTO 🔥 */
+            const normalized = items.map(item => ({
+                id: item.id,
+                name: item.name || item.nombre || "Producto",
+                price: Number(item.price ?? item.valor ?? 0),
+                image: item.image || item.imagen || "/logo.png",
+                quantity: Number(item.quantity ?? 1),
+                notes: item.notes ?? ""
+            }));
+
+            setCartItems(normalized);
+
+        } catch (e) {
+            console.error("Error cargando carrito:", e);
+            localStorage.removeItem("cartData");
         }
 
         setLoading(false);
     }, []);
 
-    /* -------- GUARDAR AL MODIFICAR -------- */
+    /* =====================================================
+       Guardar carrito
+    ===================================================== */
     useEffect(() => {
         if (typeof window === "undefined") return;
 
@@ -59,11 +102,12 @@ export default function ComprarPage() {
         }
     }, [cartItems]);
 
-    /* ===== Helpers ===== */
-
+    /* =====================================================
+       Helpers del carrito
+    ===================================================== */
     const updateCartItemQuantity = (id, newQuantity) => {
-        setCartItems((prev) =>
-            prev.map((item) =>
+        setCartItems(prev =>
+            prev.map(item =>
                 item.id === id
                     ? { ...item, quantity: Math.max(1, newQuantity) }
                     : item
@@ -72,13 +116,15 @@ export default function ComprarPage() {
     };
 
     const updateCartItemNotes = (id, notes) => {
-        setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, notes } : item))
+        setCartItems(prev =>
+            prev.map(item =>
+                item.id === id ? { ...item, notes } : item
+            )
         );
     };
 
-    const removeCartItem = (id) => {
-        setCartItems((prev) => prev.filter((item) => item.id !== id));
+    const removeCartItem = id => {
+        setCartItems(prev => prev.filter(item => item.id !== id));
     };
 
     const totalPrice = cartItems.reduce(
@@ -86,25 +132,29 @@ export default function ComprarPage() {
         0
     );
 
-    const showError = (msg) => {
+    const showError = msg => {
         setErrorMsg(msg);
         setTimeout(() => setErrorMsg(""), 2500);
     };
 
-    /* -------- WHATSAPP -------- */
-
+    /* =====================================================
+       Enviar WhatsApp
+    ===================================================== */
     const sendWhatsappOrder = () => {
-        if (!nombre.trim()) return showError("Por favor ingresá tu nombre.");
-        if (metodo === "envio" && !direccion.trim())
-            return showError("Ingresá tu dirección para el envío.");
-        if (cartItems.length === 0)
-            return showError("Tu carrito está vacío.");
+        if (!nombre.trim()) return showError("Ingresá tu nombre.");
+        if (metodo === "envio" && !direccion.trim()) return showError("Ingresá tu dirección.");
+        if (cartItems.length === 0) return showError("Tu carrito está vacío.");
+        if (!localWhatsapp) return showError("El local no tiene WhatsApp configurado.");
 
         setSending(true);
 
         let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
         mensaje += `👤 *Cliente:* ${nombre}%0A`;
         mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"}%0A`;
+
+        if (metodo === "retiro") {
+            mensaje += `📍 *Retira en:* ${localDireccion || "Local"}%0A`;
+        }
 
         if (metodo === "envio") {
             mensaje += `🏠 *Dirección:* ${direccion}%0A`;
@@ -114,19 +164,18 @@ export default function ComprarPage() {
 
         mensaje += `%0A*Detalle del pedido:*%0A`;
 
-        cartItems.forEach((item) => {
+        cartItems.forEach(item => {
             mensaje += `• ${item.quantity} x ${item.name} — $${(
                 item.price * item.quantity
             ).toFixed(2)}%0A`;
-            if (item.notes?.trim()) {
+
+            if (item.notes?.trim())
                 mensaje += `  📝 Nota: ${item.notes}%0A`;
-            }
         });
 
         mensaje += `%0A💵 *Total:* $${totalPrice.toFixed(2)}%0A`;
-        mensaje += `%0AGracias! 🙌`;
 
-        const url = `https://wa.me/${telefono}?text=${mensaje}`;
+        const url = `https://wa.me/${localWhatsapp}?text=${mensaje}`;
         window.open(url, "_blank");
 
         setTimeout(() => {
@@ -135,9 +184,11 @@ export default function ComprarPage() {
         }, 800);
     };
 
-    const handleBack = () => router.push("/");
+    /* =====================================================
+       Render
+    ===================================================== */
 
-    /* -------- RENDER -------- */
+    const handleBack = () => router.push("/");
 
     if (loading) {
         return (
@@ -152,20 +203,16 @@ export default function ComprarPage() {
             <div className={styles.emptyScreen}>
                 <Icon icon="lucide:shopping-bag" width={60} className={styles.emptyIcon} />
                 <h4 className="mb-2">Tu carrito está vacío</h4>
-                <p className="text-muted mb-4">
-                    Volvé al menú y agregá algunas hamburguesas 🍔
-                </p>
-                <Button variant="primary" onClick={handleBack}>
-                    Volver al menú
-                </Button>
+                <p className="text-muted mb-4">Volvé al menú y agregá algo 🍔</p>
+                <Button variant="primary" onClick={handleBack}>Volver al menú</Button>
             </div>
         );
     }
 
     return (
         <div className={styles.container}>
-            
-            {/* ➤ CABECERA */}
+
+            {/* CABECERA */}
             <div className={styles.headerRow}>
                 <Button variant="link" className={styles.backBtn} onClick={handleBack}>
                     <Icon icon="mdi:chevron-left" width={22} />
@@ -176,14 +223,12 @@ export default function ComprarPage() {
             </div>
 
             {errorMsg && (
-                <Alert variant="danger" className={styles.alert}>
-                    {errorMsg}
-                </Alert>
+                <Alert variant="danger" className={styles.alert}>{errorMsg}</Alert>
             )}
 
-            {/* ➤ ITEMS */}
+            {/* ITEMS */}
             <div className="mb-3">
-                {cartItems.map((item) => (
+                {cartItems.map(item => (
                     <div key={item.id} className={styles.cardItem}>
                         <img src={item.image} alt={item.name} className={styles.cardImg} />
 
@@ -210,9 +255,7 @@ export default function ComprarPage() {
                                     size="sm"
                                     variant="outline-secondary"
                                     className={styles.qtyBtn}
-                                    onClick={() =>
-                                        updateCartItemQuantity(item.id, item.quantity - 1)
-                                    }
+                                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
                                     disabled={item.quantity <= 1}
                                 >
                                     -
@@ -224,9 +267,7 @@ export default function ComprarPage() {
                                     size="sm"
                                     variant="outline-secondary"
                                     className={styles.qtyBtn}
-                                    onClick={() =>
-                                        updateCartItemQuantity(item.id, item.quantity + 1)
-                                    }
+                                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
                                 >
                                     +
                                 </Button>
@@ -243,19 +284,18 @@ export default function ComprarPage() {
                 ))}
             </div>
 
-            {/* ➤ TOTAL */}
+            {/* TOTAL */}
             <div className={styles.totalRow}>
                 <span className={styles.totalLabel}>Total:</span>
                 <span className={styles.totalPrice}>${totalPrice.toFixed(2)}</span>
             </div>
 
-            {/* ➤ CLIENTE */}
+            {/* FORM */}
             <div className="mb-4">
                 <Form.Label>Tu nombre</Form.Label>
                 <Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} />
 
                 <Form.Label className="mt-3">Método de entrega</Form.Label>
-
                 <div className={styles.radioRow}>
                     <Form.Check
                         type="radio"
@@ -288,9 +328,8 @@ export default function ComprarPage() {
                 )}
             </div>
 
-            {/* ➤ BOTONES DE ACCIÓN */}
+            {/* ACCIONES */}
             <div className={styles.actionRow}>
-                
                 <Button variant="outline-secondary" className={styles.secondaryBtn} onClick={handleBack}>
                     ← Seguir comprando
                 </Button>

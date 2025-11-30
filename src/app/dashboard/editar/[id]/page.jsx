@@ -5,87 +5,89 @@ import { useEffect, useState } from "react";
 export default function EditarComida({ params }) {
     const { id } = params;
     const [form, setForm] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [preview, setPreview] = useState("/logo.png");
 
-    // Cargar comida específica
     useEffect(() => {
-        async function fetchData() {
+        async function load() {
             try {
                 const res = await fetch(`/api/locales/${id}`);
-
-                if (!res.ok) {
-                    const text = await res.text();
-                    console.error("Error GET /api/locales/[id]:", res.status, text);
-                    return;
-                }
-
                 const data = await res.json();
+
                 setForm(data);
+
+                // Preview inicial
+                setPreview(data.imagen && data.imagen.trim() !== "" ? data.imagen : "/logo.png");
+
             } catch (err) {
                 console.error("Error cargando comida:", err);
-            } finally {
-                setLoading(false);
             }
         }
 
-        fetchData();
+        load();
     }, [id]);
 
     function handleChange(e) {
         const { name, value, type, checked } = e.target;
+        const newValue = type === "checkbox" ? checked : value;
 
-        setForm({
-            ...form,
-            [name]: type === "checkbox" ? checked : value,
-        });
+        const updated = { ...form, [name]: newValue };
+        setForm(updated);
+
+        if (name === "imagen") {
+            setPreview(value.trim() !== "" ? value : "/logo.png");
+        }
     }
 
-    // Guardar cambios
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const res = await fetch(`/api/locales/${id}`, {
+        await fetch(`/api/locales/${id}`, {
             method: "PUT",
             body: JSON.stringify(form),
         });
 
-        if (res.ok) {
-            alert("Comida actualizada");
-            window.location.href = "/dashboard";
-        } else {
-            alert("Error al actualizar");
-        }
+        alert("Cambios guardados");
+        window.location.href = "/dashboard";
     }
 
-    // Eliminar comida
     async function handleDelete() {
         if (!confirm("¿Eliminar esta comida?")) return;
 
-        const res = await fetch(`/api/locales/${id}`, {
+        await fetch(`/api/locales/${id}`, {
             method: "DELETE",
         });
 
-        if (res.ok) {
-            alert("Comida eliminada");
-            window.location.href = "/dashboard";
-        } else {
-            alert("Error al eliminar");
-        }
+        alert("Producto eliminado");
+        window.location.href = "/dashboard";
     }
 
-    if (loading || !form) return <p style={{ padding: 20 }}>Cargando...</p>;
+    if (!form) return <p style={{ padding: 20 }}>Cargando...</p>;
 
     return (
-        <div style={{ padding: 20 }}>
+        <div style={{ padding: 20, maxWidth: 480, margin: "0 auto" }}>
+
             <h1>Editando: {form.nombre}</h1>
 
+            {/* PREVIEW */}
+            <img
+                src={preview}
+                alt="preview"
+                style={{
+                    width: "100%",
+                    height: 200,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                    marginBottom: 20,
+                }}
+            />
+
+            {/* FORM */}
             <form
                 onSubmit={handleSubmit}
                 style={{
                     display: "flex",
                     flexDirection: "column",
-                    gap: "12px",
-                    maxWidth: "400px",
+                    gap: 12,
                 }}
             >
                 <input
@@ -95,21 +97,37 @@ export default function EditarComida({ params }) {
                     placeholder="Nombre"
                 />
 
+                {/* Categoría */}
+                <select name="categoria" value={form.categoria} onChange={handleChange}>
+                    <option>Hamburguesa</option>
+                    <option>Sandwich</option>
+                    <option>Papas</option>
+                    <option>Bebidas</option>
+                    <option>Otros</option>
+                </select>
+
                 <input
                     name="valor"
-                    value={form.valor}
                     type="number"
+                    value={form.valor}
                     onChange={handleChange}
                     placeholder="Precio"
                 />
 
-                <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <textarea
+                    name="descripcion"
+                    value={form.descripcion}
+                    onChange={handleChange}
+                    placeholder="Descripción"
+                />
+
+                <label>
                     <input
                         type="checkbox"
                         name="oferta"
                         checked={form.oferta}
                         onChange={handleChange}
-                    />
+                    />{" "}
                     ¿En oferta?
                 </label>
 
@@ -119,22 +137,15 @@ export default function EditarComida({ params }) {
                         type="number"
                         value={form.valorOferta || ""}
                         onChange={handleChange}
-                        placeholder="Precio en oferta"
+                        placeholder="Precio oferta"
                     />
                 )}
-
-                <textarea
-                    name="descripcion"
-                    value={form.descripcion}
-                    onChange={handleChange}
-                    placeholder="Descripción"
-                />
 
                 <input
                     name="imagen"
                     value={form.imagen}
                     onChange={handleChange}
-                    placeholder="URL imagen"
+                    placeholder="URL Imagen"
                 />
 
                 <button
@@ -142,15 +153,28 @@ export default function EditarComida({ params }) {
                     style={{
                         background: "#0070f3",
                         color: "white",
-                        padding: "10px",
-                        borderRadius: "6px",
+                        padding: 10,
+                        borderRadius: 6,
+                        marginTop: 10,
                     }}
                 >
                     Guardar cambios
                 </button>
             </form>
 
-
+            <button
+                onClick={handleDelete}
+                style={{
+                    marginTop: 20,
+                    padding: 10,
+                    width: "100%",
+                    background: "red",
+                    color: "white",
+                    borderRadius: 6,
+                }}
+            >
+                Eliminar comida
+            </button>
         </div>
     );
 }

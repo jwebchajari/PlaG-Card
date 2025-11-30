@@ -39,7 +39,7 @@ export default function DashboardLayout({ children }) {
                 </a>
 
                 <a
-                    href="/dashboard/datos-local"
+                    href="/dashboard/datos"
                     style={linkStyle}
                 >
                     🏠 Datos del Local
