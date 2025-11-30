@@ -3,41 +3,37 @@ import { ref, get, push, set } from "firebase/database";
 
 const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
 
+// GET → obtener todas las comidas
 export async function GET() {
 	try {
-		const snapshot = await get(ref(db, `locales/${LOCAL}`));
+		const snapshot = await get(ref(db, `locales/${LOCAL}/comidas`));
 		return Response.json(snapshot.val() || {});
-	} catch (error) {
-		console.error("Error GET /api/locales:", error);
-		return Response.json(
-			{ error: "Error obteniendo comidas" },
-			{ status: 500 }
-		);
+	} catch (err) {
+		console.error("ERROR GET /api/locales:", err);
+		return Response.json({ error: "No se pudo obtener" }, { status: 500 });
 	}
 }
 
+// POST → agregar comida
 export async function POST(req) {
 	try {
 		const body = await req.json();
 
-		const data = {
+		const newRef = push(ref(db, `locales/${LOCAL}/comidas`));
+
+		await set(newRef, {
 			nombre: body.nombre ?? "",
+			categoria: body.categoria ?? "Otros",
 			valor: Number(body.valor) || 0,
 			descripcion: body.descripcion ?? "",
 			oferta: Boolean(body.oferta),
 			valorOferta: body.valorOferta ? Number(body.valorOferta) : null,
 			imagen: body.imagen ?? "",
-		};
+		});
 
-		const nuevaRef = push(ref(db, `locales/${LOCAL}`));
-		await set(nuevaRef, data);
-
-		return Response.json({ id: nuevaRef.key, ...data }, { status: 201 });
+		return Response.json({ ok: true });
 	} catch (error) {
-		console.error("Error POST /api/locales:", error);
-		return Response.json(
-			{ error: "Error creando comida" },
-			{ status: 500 }
-		);
+		console.error("POST /api/locales ERROR:", error);
+		return Response.json({ error: "No se pudo agregar" }, { status: 500 });
 	}
 }

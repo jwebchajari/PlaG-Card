@@ -9,6 +9,7 @@ export default function Dashboard() {
     const [comidas, setComidas] = useState({});
     const [loading, setLoading] = useState(true);
 
+    // Cargar comidas del API
     useEffect(() => {
         async function load() {
             try {
@@ -30,11 +31,39 @@ export default function Dashboard() {
         load();
     }, []);
 
+    // Borrar comida
+    async function handleDelete(id) {
+        if (!confirm("¿Seguro que querés borrar esta comida?")) return;
+
+        try {
+            const res = await fetch(`/api/locales/${id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                console.error("Error DELETE /api/locales/[id]:", res.status, text);
+                alert("Error al borrar la comida");
+                return;
+            }
+
+            // Actualizar estado sin recargar
+            setComidas((prev) => {
+                const nuevo = { ...prev };
+                delete nuevo[id];
+                return nuevo;
+            });
+        } catch (err) {
+            console.error("Error de red al borrar comida:", err);
+            alert("Error al borrar la comida");
+        }
+    }
+
     if (loading) return <p style={{ padding: 20 }}>Cargando...</p>;
 
     return (
         <div style={{ padding: 20 }}>
-            <h1>Administrar menú – {LOCAL}</h1>
+            <h1 style={{ marginBottom: 20 }}>Administrar menú – {LOCAL}</h1>
 
             <Link
                 href="/dashboard/agregar"
@@ -46,6 +75,7 @@ export default function Dashboard() {
                     color: "white",
                     borderRadius: "6px",
                     textDecoration: "none",
+                    fontWeight: "500",
                 }}
             >
                 ➕ Agregar comida
@@ -60,6 +90,11 @@ export default function Dashboard() {
             >
                 {Object.entries(comidas).map(([id, item]) => {
                     const enOferta = item.oferta && item.valorOferta;
+                    const imageSrc =
+                        item.imagen && item.imagen.trim() !== ""
+                            ? item.imagen
+                            : "/logo.png"; // fallback
+
                     return (
                         <div
                             key={id}
@@ -69,24 +104,29 @@ export default function Dashboard() {
                                 padding: "16px",
                                 boxShadow: "0 2px 5px rgba(0,0,0,0.08)",
                                 background: "white",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                                minHeight: "100%",
                             }}
                         >
-                            {item.imagen && (
-                                <img
-                                    src={item.imagen}
-                                    alt={item.nombre}
-                                    style={{
-                                        width: "100%",
-                                        height: "150px",
-                                        objectFit: "cover",
-                                        borderRadius: "8px",
-                                        marginBottom: "10px",
-                                    }}
-                                />
-                            )}
+                            {/* Imagen */}
+                            <img
+                                src={imageSrc}
+                                alt={item.nombre}
+                                style={{
+                                    width: "100%",
+                                    height: "150px",
+                                    objectFit: "cover",
+                                    borderRadius: "8px",
+                                    marginBottom: "10px",
+                                }}
+                            />
 
+                            {/* Título */}
                             <h2 style={{ margin: "0 0 5px 0" }}>{item.nombre}</h2>
 
+                            {/* Etiqueta oferta */}
                             {enOferta && (
                                 <span
                                     style={{
@@ -95,12 +135,14 @@ export default function Dashboard() {
                                         padding: "2px 6px",
                                         borderRadius: "4px",
                                         fontSize: "12px",
+                                        alignSelf: "flex-start",
                                     }}
                                 >
                                     OFERTA
                                 </span>
                             )}
 
+                            {/* Precios */}
                             <div style={{ marginTop: 8, marginBottom: 8 }}>
                                 {enOferta ? (
                                     <>
@@ -122,27 +164,53 @@ export default function Dashboard() {
                                 )}
                             </div>
 
+                            {/* Descripción */}
                             {item.descripcion && (
                                 <p style={{ fontSize: "14px", color: "#555" }}>
                                     {item.descripcion}
                                 </p>
                             )}
 
-                            <Link
-                                href={`/dashboard/editar/${id}`}
+                            {/* Botones */}
+                            <div
                                 style={{
-                                    display: "inline-block",
                                     marginTop: "10px",
-                                    background: "#333",
-                                    color: "white",
-                                    padding: "6px 12px",
-                                    borderRadius: "6px",
-                                    textDecoration: "none",
-                                    fontSize: "14px",
+                                    display: "flex",
+                                    gap: "8px",
                                 }}
                             >
-                                ✏ Editar
-                            </Link>
+                                <Link
+                                    href={`/dashboard/editar/${id}`}
+                                    style={{
+                                        flex: 1,
+                                        textAlign: "center",
+                                        background: "#333",
+                                        color: "white",
+                                        padding: "6px 12px",
+                                        borderRadius: "6px",
+                                        textDecoration: "none",
+                                        fontSize: "14px",
+                                    }}
+                                >
+                                    ✏ Editar
+                                </Link>
+
+                                <button
+                                    onClick={() => handleDelete(id)}
+                                    style={{
+                                        flex: 1,
+                                        background: "#e00",
+                                        color: "white",
+                                        padding: "6px 12px",
+                                        borderRadius: "6px",
+                                        border: "none",
+                                        fontSize: "14px",
+                                        cursor: "pointer",
+                                    }}
+                                >
+                                    🗑 Borrar
+                                </button>
+                            </div>
                         </div>
                     );
                 })}

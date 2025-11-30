@@ -3,8 +3,11 @@
 import { useState } from "react";
 
 export default function AgregarComida() {
+    const [preview, setPreview] = useState("/logo.png");
+
     const [form, setForm] = useState({
         nombre: "",
+        categoria: "Hamburguesa",
         valor: "",
         descripcion: "",
         oferta: false,
@@ -14,10 +17,17 @@ export default function AgregarComida() {
 
     function handleChange(e) {
         const { name, value, type, checked } = e.target;
+
+        const newValue = type === "checkbox" ? checked : value;
+
         setForm({
             ...form,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: newValue,
         });
+
+        if (name === "imagen") {
+            setPreview(value.trim() ? value : "/logo.png");
+        }
     }
 
     async function handleSubmit(e) {
@@ -32,153 +42,59 @@ export default function AgregarComida() {
             alert("Comida agregada");
             window.location.href = "/dashboard";
         } else {
-            alert("Error al agregar comida");
+            alert("Error al agregar");
         }
     }
 
     return (
-        <div
-            style={{
-                padding: "20px",
-                maxWidth: "480px",
-                margin: "0 auto",
-            }}
-        >
-            <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
-                Agregar comida
-            </h1>
+        <div style={{ padding: 20, maxWidth: 480, margin: "0 auto" }}>
+            <h1>Agregar Comida</h1>
 
-            <form
-                onSubmit={handleSubmit}
+            {/* PREVIEW */}
+            <img
+                src={preview}
+                alt="preview"
                 style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "15px",
+                    width: "100%",
+                    height: 180,
+                    objectFit: "cover",
+                    marginBottom: 20,
+                    borderRadius: 8,
                 }}
-            >
-                {/* Campo Nombre */}
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                    <label style={{ marginBottom: "5px" }}>Nombre</label>
-                    <input
-                        name="nombre"
-                        placeholder="Ej: Doble queso"
-                        onChange={handleChange}
-                        style={{
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "16px",
-                        }}
-                        required
-                    />
-                </div>
+            />
 
-                {/* Valor Normal */}
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                    <label style={{ marginBottom: "5px" }}>Valor normal</label>
-                    <input
-                        name="valor"
-                        type="number"
-                        placeholder="Ej: 15000"
-                        onChange={handleChange}
-                        style={{
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "16px",
-                        }}
-                        required
-                    />
-                </div>
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
 
-                {/* Descripción */}
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                    <label style={{ marginBottom: "5px" }}>Descripción</label>
-                    <textarea
-                        name="descripcion"
-                        placeholder="Ej: lechuga, tomate, queso..."
-                        onChange={handleChange}
-                        style={{
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "16px",
-                            minHeight: "90px",
-                        }}
-                    />
-                </div>
+                <input name="nombre" placeholder="Nombre" onChange={handleChange} />
 
-                {/* Switch de oferta */}
-                <label
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                        fontSize: "16px",
-                        fontWeight: "500",
-                    }}
-                >
-                    <input
-                        type="checkbox"
-                        name="oferta"
-                        onChange={handleChange}
-                        style={{ transform: "scale(1.4)" }}
-                    />
-                    ¿Está en oferta?
+                {/* Categoría */}
+                <select name="categoria" onChange={handleChange} defaultValue="Hamburguesa">
+                    <option>Hamburguesa</option>
+                    <option>Sandwich</option>
+                    <option>Papas</option>
+                    <option>Bebidas</option>
+                    <option>Otros</option>
+                </select>
+
+                <input name="valor" type="number" placeholder="Precio" onChange={handleChange} />
+
+                <textarea name="descripcion" placeholder="Descripción" onChange={handleChange}></textarea>
+
+                <label>
+                    <input type="checkbox" name="oferta" onChange={handleChange} /> ¿En oferta?
                 </label>
 
-                {/* Campo valorOferta (solo si oferta = true) */}
                 {form.oferta && (
-                    <div style={{ display: "flex", flexDirection: "column" }}>
-                        <label style={{ marginBottom: "5px" }}>Valor oferta</label>
-                        <input
-                            name="valorOferta"
-                            type="number"
-                            placeholder="Ej: 12000"
-                            onChange={handleChange}
-                            style={{
-                                padding: "12px",
-                                borderRadius: "8px",
-                                border: "1px solid #ccc",
-                                fontSize: "16px",
-                            }}
-                        />
-                    </div>
+                    <input name="valorOferta" type="number" placeholder="Precio oferta" onChange={handleChange} />
                 )}
 
-                {/* Imagen */}
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                    <label style={{ marginBottom: "5px" }}>URL de imagen</label>
-                    <input
-                        name="imagen"
-                        placeholder="https://imagen.jpg"
-                        onChange={handleChange}
-                        style={{
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #ccc",
-                            fontSize: "16px",
-                        }}
-                    />
-                </div>
+                <input name="imagen" placeholder="URL Imagen" onChange={handleChange} />
 
-                {/* Botón */}
-                <button
-                    type="submit"
-                    style={{
-                        backgroundColor: "#0070f3",
-                        color: "white",
-                        padding: "14px",
-                        borderRadius: "8px",
-                        fontSize: "18px",
-                        border: "none",
-                        cursor: "pointer",
-                        marginTop: "10px",
-                    }}
-                >
-                    Guardar comida
+                <button type="submit" style={{ background: "#0070f3", color: "white", padding: 10, borderRadius: 6 }}>
+                    Guardar
                 </button>
             </form>
+
         </div>
     );
 }
