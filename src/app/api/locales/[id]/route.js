@@ -21,11 +21,8 @@ export async function PUT(req, { params }) {
 
 		return Response.json({ ok: true });
 	} catch (error) {
-		console.error("Error PUT /api/locales/[id]:", error);
-		return Response.json(
-			{ error: "Error actualizando comida" },
-			{ status: 500 }
-		);
+		console.error("PUT /api/locales/[id] ERROR:", error);
+		return Response.json({ error: "Error al actualizar" }, { status: 500 });
 	}
 }
 
@@ -37,10 +34,7 @@ export async function DELETE(req, { params }) {
 
 		return Response.json({ ok: true });
 	} catch (error) {
-		console.error("Error DELETE /api/locales/[id]:", error);
-		return Response.json(
-			{ error: "Error eliminando comida" },
-			{ status: 500 }
-		);
+		console.error("DELETE /api/locales/[id] ERROR:", error);
+		return Response.json({ error: "Error al eliminar" }, { status: 500 });
 	}
 }
