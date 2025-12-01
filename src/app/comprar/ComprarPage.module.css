@@ -1,3 +1,6 @@
+/* =============================== */
+/* CONTENEDOR GENERAL              */
+/* =============================== */
 .container {
     padding: 1rem;
     padding-bottom: 7rem;
@@ -5,7 +8,9 @@
     margin: 0 auto;
 }
 
-/* LOADING */
+/* =============================== */
+/* LOADING                         */
+/* =============================== */
 .loadingScreen {
     height: 100vh;
     display: flex;
@@ -15,7 +20,9 @@
     color: var(--color-text-muted);
 }
 
-/* EMPTY */
+/* =============================== */
+/* EMPTY SCREEN                    */
+/* =============================== */
 .emptyScreen {
     height: 90vh;
     display: flex;
@@ -30,7 +37,9 @@
     opacity: 0.4;
 }
 
-/* HEADER */
+/* =============================== */
+/* HEADER                          */
+/* =============================== */
 .headerRow {
     display: flex;
     justify-content: space-between;
@@ -45,24 +54,29 @@
     text-decoration: none;
     color: var(--color-primary);
     font-weight: 600;
+    font-size: 0.95rem;
 }
 
-/* ALERT */
+/* =============================== */
+/* ALERTAS                         */
+/* =============================== */
 .alert {
     font-size: 0.9rem;
-    border-radius: 10px;
-    padding: 0.6rem;
+    border-radius: 12px;
+    padding: 0.7rem;
 }
 
-/* PRODUCT CARD */
+/* =============================== */
+/* CARD DEL CARRITO                */
+/* =============================== */
 .cardItem {
     display: flex;
     gap: 14px;
     padding: 14px;
     border-radius: 14px;
-    background: white;
-    border: 1px solid #ececec;
-    box-shadow: rgba(0,0,0,0.06) 0px 2px 6px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     margin-bottom: 1rem;
     transition: transform 0.1s ease;
 }
@@ -78,6 +92,9 @@
     object-fit: cover;
 }
 
+/* =============================== */
+/* CARD INFO                       */
+/* =============================== */
 .cardHead {
     display: flex;
     justify-content: space-between;
@@ -91,9 +108,9 @@
 }
 
 .cardSub {
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     color: var(--color-text-muted);
-    margin-bottom: 6px;
+    margin: 4px 0;
 }
 
 .removeBtn {
@@ -102,21 +119,58 @@
     cursor: pointer;
     color: #ff4d4d;
     padding: 4px;
+    transition: 0.2s;
 }
 
-/* CANTIDAD */
+.removeBtn:hover {
+    color: #d93636;
+}
+
+/* =============================== */
+/* CONTROLES DE CANTIDAD           */
+/* =============================== */
 .qtyRow {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 8px;
+    margin: 6px 0;
 }
 
 .qtyBtn {
     border-radius: 10px;
+    padding: 4px 10px;
 }
 
-/* TOTAL */
+/* Extra cost */
+.extraText {
+    font-size: 0.85rem;
+    color: #d35400;
+    font-weight: 700;
+}
+
+/* =============================== */
+/* SELECT (PAN)                    */
+/* =============================== */
+.select {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid #d1d1d1;
+    background: #fafafa;
+    margin-top: 4px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.select:focus {
+    border-color: var(--color-primary);
+    background: white;
+    outline: none;
+}
+
+/* =============================== */
+/* TOTAL                            */
+/* =============================== */
 .totalRow {
     display: flex;
     justify-content: space-between;
@@ -128,17 +182,21 @@
 
 .totalLabel,
 .totalPrice {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
 }
 
-/* RADIOS */
+/* =============================== */
+/* RADIOS DE ENTREGA / PAGO        */
+/* =============================== */
 .radioRow {
     display: flex;
     gap: 1.5rem;
-    margin-bottom: .5rem;
+    margin: 0.5rem 0;
 }
 
-/* ACTION BUTTONS */
+/* =============================== */
+/* ACCIONES (BOTONES INFERIORES)   */
+/* =============================== */
 .actionRow {
     display: flex;
     flex-direction: column;
@@ -170,7 +228,7 @@
     background: #25d366;
     border: none;
     color: white;
-    box-shadow: rgba(0, 0, 0, 0.15) 0px 3px 8px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
     transition: 0.2s;
 }
 
@@ -178,20 +236,22 @@
     background: #1ebe5d;
 }
 
-
-/* 📎 Caja de transferencia */
-.transferBox {
-    background: var(--color-bg-alt);
-    border: 1px solid var(--color-border-soft);
+/* =============================== */
+/* CAJA DE TRANSFERENCIA           */
+/* =============================== */
+.aliasBox {
+    background: #fdfdfd;
+    border: 1px solid #e6e6e6;
     border-radius: 12px;
     padding: 14px;
     margin-top: 1rem;
     box-shadow: var(--shadow-soft);
 }
 
-.transferLabel {
+.aliasLabel {
     font-weight: 600;
     margin-bottom: 6px;
+    font-size: 0.9rem;
 }
 
 .aliasRow {
@@ -199,7 +259,7 @@
     justify-content: space-between;
     align-items: center;
     background: white;
-    border: 1px solid var(--color-border-soft);
+    border: 1px solid #dadada;
     padding: 10px 12px;
     border-radius: 8px;
 }
@@ -212,7 +272,9 @@
     font-size: 0.8rem;
 }
 
-/* 🟢 Animación toast “copiado” */
+/* =============================== */
+/* ANIMACIÓN "COPIADO"             */
+/* =============================== */
 .copiedToast {
     margin-top: 10px;
     background: #39e78d;

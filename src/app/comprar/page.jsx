@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Form, Alert } from "react-bootstrap";
@@ -18,6 +18,10 @@ export default function ComprarPage() {
     const [localDireccion, setLocalDireccion] = useState("");
     const [localAlias, setLocalAlias] = useState("");
 
+    // ⭐ Nuevos precios dinámicos
+    const [extraCarne, setExtraCarne] = useState(1500);
+    const [extraPanEspecial, setExtraPanEspecial] = useState(500);
+
     const [nombre, setNombre] = useState("");
     const [metodo, setMetodo] = useState("retiro");
     const [metodoPago, setMetodoPago] = useState("efectivo");
@@ -28,7 +32,7 @@ export default function ComprarPage() {
     const [errorMsg, setErrorMsg] = useState("");
     const [copied, setCopied] = useState(false);
 
-    /* ====================== Refs para scroll ====================== */
+    /* ====================== Refs ====================== */
     const nombreRef = useRef(null);
     const direccionRef = useRef(null);
     const metodoPagoRef = useRef(null);
@@ -50,8 +54,13 @@ export default function ComprarPage() {
                 setLocalWhatsapp(data.whatsapp || "");
                 setLocalDireccion(data.direccion || "");
                 setLocalAlias(data.alias || "");
-            } catch (err) {
-                console.error("Error cargando datos del local:", err);
+
+                // ⭐ Cargar extras desde Firebase
+                setExtraCarne(data.extras?.carne || 1500);
+                setExtraPanEspecial(data.extras?.panEspecial || 500);
+
+            } catch (e) {
+                console.error("Error cargando datos del local:", e);
             }
         }
 
@@ -66,9 +75,7 @@ export default function ComprarPage() {
         if (stored) {
             try {
                 const { items, timestamp } = JSON.parse(stored);
-                const diff = Date.now() - timestamp;
-
-                if (diff < 3 * 60 * 60 * 1000 && Array.isArray(items) && items.length > 0) {
+                if (Date.now() - timestamp < 3 * 60 * 60 * 1000) {
                     setCartItems(items);
                 } else {
                     localStorage.removeItem("cartData");
@@ -77,14 +84,11 @@ export default function ComprarPage() {
                 localStorage.removeItem("cartData");
             }
         }
-
         setLoading(false);
     }, []);
 
     /* ====================== Guardar carrito ====================== */
     useEffect(() => {
-        if (typeof window === "undefined") return;
-
         if (cartItems.length > 0) {
             localStorage.setItem(
                 "cartData",
@@ -97,26 +101,69 @@ export default function ComprarPage() {
 
     /* ====================== Helpers carrito ====================== */
 
+    // EDITAR cantidad de carnes dinamicamente
+    const updateItemMeat = (id, newCount) => {
+        setCartItems((prev) =>
+            prev.map((item) =>
+                item.id === id
+                    ? {
+                        ...item,
+                        meatCount: Math.max(1, newCount),
+                        extraMeatPrice: Math.max(0, newCount - 1) * extraCarne, // ⭐ dinámico
+                    }
+                    : item
+            )
+        );
+    };
+
+    // EDITAR tipo de pan dinámicamente
+    const updateItemBread = (id, breadType) => {
+        setCartItems((prev) =>
+            prev.map((item) =>
+                item.id === id
+                    ? {
+                        ...item,
+                        breadType,
+                        extraBreadPrice:
+                            breadType === "comun" ? 0 : extraPanEspecial, // ⭐ dinámico
+                    }
+                    : item
+            )
+        );
+    };
+
     const updateCartItemQuantity = (id, qty) => {
         setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, quantity: Math.max(1, qty) } : item))
+            prev.map((item) =>
+                item.id === id ? { ...item, quantity: Math.max(1, qty) } : item
+            )
         );
     };
 
     const updateCartItemNotes = (id, notes) => {
         setCartItems((prev) =>
-            prev.map((item) => (item.id === id ? { ...item, notes } : item))
+            prev.map((item) =>
+                item.id === id ? { ...item, notes } : item
+            )
         );
     };
 
     const removeCartItem = (id) =>
         setCartItems((prev) => prev.filter((i) => i.id !== id));
 
-    const totalPrice = cartItems.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-    );
+    /* ====================== TOTAL con extras ====================== */
+    const totalPrice = useMemo(() => {
+        return cartItems.reduce((acc, item) => {
+            const finalUnit =
+                item.price +
+                (item.extraMeatPrice || 0) +
+                (item.extraBreadPrice || 0);
 
+            return acc + finalUnit * item.quantity;
+        }, 0);
+    }, [cartItems]);
+
+    /* ====================== Mostrar error ====================== */
     const showError = (msg) => {
         setErrorMsg(msg);
         setTimeout(() => setErrorMsg(""), 2500);
@@ -159,45 +206,43 @@ export default function ComprarPage() {
         }
 
         const phoneDigits = (localWhatsapp || "").replace(/\D/g, "");
+
         if (!phoneDigits) {
             showError("El local no tiene WhatsApp configurado.");
             return;
         }
 
         setSending(true);
-
         const br = "%0A";
 
         let msg = `🛎️ *Nuevo pedido desde Pintó La Gula* ${br}${br}`;
         msg += `👤 *Cliente:* ${nombre}${br}`;
-        msg += `🚚 *Entrega:* ${metodo === "retiro" ? "Retiro en el local" : "Envío a domicilio"}${br}`;
-        msg += `💳 *Pago:* ${metodoPago === "efectivo" ? "Efectivo" : "Transferencia"}${br}`;
-
-        if (metodoPago === "transferencia" && localAlias) {
-            msg += `🏦 *Alias:* ${localAlias}${br}`;
-            msg += `📎 Enviar comprobante luego de la transferencia.${br}`;
-        }
+        msg += `🚚 *Entrega:* ${metodo}${br}`;
+        msg += `💳 *Pago:* ${metodoPago}${br}${br}`;
 
         if (metodo === "envio") {
-            msg += `${br}🏠 *Dirección:* ${direccion}${br}`;
+            msg += `🏠 *Dirección:* ${direccion}${br}`;
             if (obsEntrega.trim()) msg += `📌 *Observaciones:* ${obsEntrega}${br}`;
-        } else {
-            msg += `${br}📍 *Retira en:* ${localDireccion || "Local"}${br}`;
         }
 
         msg += `${br}🛒 *Pedido:*${br}`;
+
         cartItems.forEach((item) => {
-            msg += `• ${item.quantity} × ${item.name} — $${(item.price * item.quantity).toFixed(
-                2
-            )}${br}`;
-            if (item.notes?.trim()) msg += `  📝 Nota: ${item.notes}${br}`;
+            const finalUnit =
+                item.price + (item.extraMeatPrice || 0) + (item.extraBreadPrice || 0);
+            const itemTotal = finalUnit * item.quantity;
+
+            msg += `• ${item.quantity} × ${item.name} — $${itemTotal.toFixed(2)}${br}`;
+            msg += `   🍖 Carnes: ${item.meatCount}${br}`;
+            msg += `   🍞 Pan: ${item.breadType}${br}`;
+            if (item.notes?.trim()) msg += `   📝 Nota: ${item.notes}${br}`;
+            msg += br;
         });
 
-        msg += `${br}💵 *Total:* $${totalPrice.toFixed(2)}${br}`;
-        msg += `${br}🙏 ¡Gracias por tu compra!`;
+        msg += `💵 *TOTAL:* $${totalPrice.toFixed(2)}${br}${br}`;
+        msg += `🙏 ¡Gracias por tu compra!`;
 
-        const url = `https://wa.me/${phoneDigits}?text=${msg}`;
-        window.open(url, "_blank");
+        window.open(`https://wa.me/${phoneDigits}?text=${msg}`, "_blank");
 
         setTimeout(() => {
             setSending(false);
@@ -212,13 +257,10 @@ export default function ComprarPage() {
         cartItems,
         totalPrice,
         localWhatsapp,
-        localDireccion,
-        localAlias,
         router
     ]);
 
-    /* ====================== Render ====================== */
-
+    /* ====================== RENDER ====================== */
     if (loading)
         return (
             <div className={styles.loadingScreen}>
@@ -248,7 +290,6 @@ export default function ComprarPage() {
                 </Link>
 
                 <h3 className="m-0 fw-bold">Tu pedido</h3>
-
                 <div style={{ width: 90 }} />
             </div>
 
@@ -258,59 +299,137 @@ export default function ComprarPage() {
                 </Alert>
             )}
 
-            {/* ITEMS */}
-            <div className="mb-3">
-                {cartItems.map((item) => (
-                    <div key={item.id} className={styles.cardItem}>
-                        <img src={item.image} alt={item.name} className={styles.cardImg} />
 
-                        <div className="flex-grow-1">
-                            <div className={styles.cardHead}>
-                                <div>
-                                    <h6 className={styles.cardTitle}>{item.name}</h6>
-                                    <p className={styles.cardSub}>
-                                        ${item.price} × {item.quantity} = ${" "}
-                                        {(item.price * item.quantity).toFixed(2)}
-                                    </p>
+            <div className="mb-3">
+                {cartItems.map((item) => {
+                    const finalUnitPrice =
+                        item.price +
+                        (item.extraMeatPrice || 0) +
+                        (item.extraBreadPrice || 0);
+
+                    const itemTotal = finalUnitPrice * item.quantity;
+
+                    return (
+                        <div key={item.id} className={styles.cardItem}>
+                            <img src={item.image} alt={item.name} className={styles.cardImg} />
+
+                            <div className="flex-grow-1">
+                                <div className={styles.cardHead}>
+                                    <div>
+                                        <h6 className={styles.cardTitle}>{item.name}</h6>
+
+                                        {/* Carnes */}
+                                        <div className={styles.qtyRow}>
+                                            <span>🍖 Carnes:</span>
+
+                                            <Button
+                                                size="sm"
+                                                variant="outline-secondary"
+                                                className={styles.qtyBtn}
+                                                onClick={() =>
+                                                    updateItemMeat(item.id, item.meatCount - 1)
+                                                }
+                                                disabled={item.meatCount <= 1}
+                                            >
+                                                -
+                                            </Button>
+
+                                            <span className="fw-bold">{item.meatCount}</span>
+
+                                            <Button
+                                                size="sm"
+                                                variant="outline-secondary"
+                                                className={styles.qtyBtn}
+                                                onClick={() =>
+                                                    updateItemMeat(item.id, item.meatCount + 1)
+                                                }
+                                            >
+                                                +
+                                            </Button>
+
+                                            {/* precio dinámico */}
+                                            {item.extraMeatPrice > 0 && (
+                                                <span className={styles.extraText}>
+                                                    +${item.extraMeatPrice}
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Pan */}
+                                        <div className="mt-1">
+                                            <span>🍞 Pan:</span>
+                                            <select
+                                                className={styles.select}
+                                                value={item.breadType}
+                                                onChange={(e) =>
+                                                    updateItemBread(item.id, e.target.value)
+                                                }
+                                            >
+                                                <option value="comun">Común</option>
+                                                <option value="papa">
+                                                    Pan de papa (+${extraPanEspecial})
+                                                </option>
+                                                <option value="parmesano">
+                                                    Parmesano (+${extraPanEspecial})
+                                                </option>
+                                            </select>
+                                        </div>
+
+                                        <p className={styles.cardSub}>
+                                            ${finalUnitPrice} × {item.quantity} ={" "}
+                                            <b>${itemTotal.toFixed(2)}</b>
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        className={styles.removeBtn}
+                                        onClick={() => removeCartItem(item.id)}
+                                    >
+                                        <Icon icon="lucide:trash-2" width={18} />
+                                    </button>
                                 </div>
 
-                                <button className={styles.removeBtn} onClick={() => removeCartItem(item.id)}>
-                                    <Icon icon="lucide:trash-2" width={18} />
-                                </button>
-                            </div>
+                                {/* Cantidad */}
+                                <div className={styles.qtyRow}>
+                                    <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        className={styles.qtyBtn}
+                                        onClick={() =>
+                                            updateCartItemQuantity(item.id, item.quantity - 1)
+                                        }
+                                        disabled={item.quantity <= 1}
+                                    >
+                                        -
+                                    </Button>
 
-                            <div className={styles.qtyRow}>
-                                <Button
+                                    <span className="fw-bold">{item.quantity}</span>
+
+                                    <Button
+                                        size="sm"
+                                        variant="outline-secondary"
+                                        className={styles.qtyBtn}
+                                        onClick={() =>
+                                            updateCartItemQuantity(item.id, item.quantity + 1)
+                                        }
+                                    >
+                                        +
+                                    </Button>
+                                </div>
+
+                                {/* Notas */}
+                                <Form.Control
                                     size="sm"
-                                    variant="outline-secondary"
-                                    className={styles.qtyBtn}
-                                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-                                    disabled={item.quantity <= 1}
-                                >
-                                    -
-                                </Button>
-
-                                <span className="fw-bold">{item.quantity}</span>
-
-                                <Button
-                                    size="sm"
-                                    variant="outline-secondary"
-                                    className={styles.qtyBtn}
-                                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-                                >
-                                    +
-                                </Button>
+                                    placeholder="Notas (sin cebolla, extra cheddar...)"
+                                    value={item.notes || ""}
+                                    onChange={(e) =>
+                                        updateCartItemNotes(item.id, e.target.value)
+                                    }
+                                />
                             </div>
-
-                            <Form.Control
-                                size="sm"
-                                placeholder="Notas (sin cebolla, extra cheddar...)"
-                                value={item.notes || ""}
-                                onChange={(e) => updateCartItemNotes(item.id, e.target.value)}
-                            />
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* TOTAL */}
@@ -319,10 +438,18 @@ export default function ComprarPage() {
                 <span className={styles.totalPrice}>${totalPrice.toFixed(2)}</span>
             </div>
 
+
+
+
+
             {/* FORM CLIENTE */}
             <div className="mb-4">
                 <Form.Label>Tu nombre</Form.Label>
-                <Form.Control ref={nombreRef} value={nombre} onChange={(e) => setNombre(e.target.value)} />
+                <Form.Control
+                    ref={nombreRef}
+                    value={nombre}
+                    onChange={(e) => setNombre(e.target.value)}
+                />
 
                 <Form.Label className="mt-3">Método de entrega</Form.Label>
                 <div className={styles.radioRow}>
@@ -343,14 +470,21 @@ export default function ComprarPage() {
                 {metodo === "envio" && (
                     <>
                         <Form.Label className="mt-3">Dirección</Form.Label>
-                        <Form.Control ref={direccionRef} value={direccion} onChange={(e) => setDireccion(e.target.value)} />
+                        <Form.Control
+                            ref={direccionRef}
+                            value={direccion}
+                            onChange={(e) => setDireccion(e.target.value)}
+                        />
 
                         <Form.Label className="mt-3">Observaciones</Form.Label>
-                        <Form.Control value={obsEntrega} onChange={(e) => setObsEntrega(e.target.value)} />
+                        <Form.Control
+                            value={obsEntrega}
+                            onChange={(e) => setObsEntrega(e.target.value)}
+                        />
                     </>
                 )}
 
-                {/* METODO DE PAGO */}
+                {/* Metodo de pago */}
                 <Form.Label className="mt-3">Método de pago</Form.Label>
                 <div ref={metodoPagoRef} className={styles.radioRow}>
                     <Form.Check
@@ -359,7 +493,6 @@ export default function ComprarPage() {
                         checked={metodoPago === "efectivo"}
                         onChange={() => setMetodoPago("efectivo")}
                     />
-
                     <Form.Check
                         type="radio"
                         label="Transferencia"
@@ -368,11 +501,10 @@ export default function ComprarPage() {
                     />
                 </div>
 
-                {/* ALIAS SI ES TRANSFERENCIA */}
+                {/* Alias */}
                 {metodoPago === "transferencia" && localAlias && (
                     <div className={styles.aliasBox}>
                         <p className={styles.aliasLabel}>Alias para transferir</p>
-
                         <div className={styles.aliasRow}>
                             <span className={styles.aliasText}>{localAlias}</span>
 
@@ -382,8 +514,8 @@ export default function ComprarPage() {
                         </div>
 
                         <small className="text-muted">
-                            Primero envía el pedido por WhatsApp.  
-                            Luego realizá la transferencia y enviá el comprobante por el chat.
+                            Primero envía el pedido por WhatsApp.
+                            Luego realizá la transferencia y enviá el comprobante.
                         </small>
                     </div>
                 )}
@@ -391,11 +523,12 @@ export default function ComprarPage() {
 
             {/* BOTONES */}
             <div className={styles.actionRow}>
-                <Link href="/" className={`btn ${styles.secondaryBtn}`}>
-                    ← Seguir comprando
-                </Link>
 
-                <Button className={styles.whatsappBtn} onClick={sendWhatsappOrder} disabled={sending}>
+                <Button
+                    className={styles.whatsappBtn}
+                    onClick={sendWhatsappOrder}
+                    disabled={sending}
+                >
                     {sending ? (
                         <>
                             <span className="spinner-border spinner-border-sm me-2" />
@@ -408,7 +541,14 @@ export default function ComprarPage() {
                         </>
                     )}
                 </Button>
+                <hr />
+                <br />
+
+
             </div>
+            <Link href="/" className={`btn ${styles.secondaryBtn}`}>
+                ← Seguir comprando
+            </Link>
         </div>
     );
 }

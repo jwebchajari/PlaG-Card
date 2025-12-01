@@ -82,6 +82,7 @@ export default function Home() {
 
           agrupados[catKey].push({
             id,
+            category: catKey,   // ⬅️ NUEVO
             name: item.nombre || "",
             description: item.descripcion || "",
             price: basePrice || 0,
@@ -91,7 +92,10 @@ export default function Home() {
             image: item.imagen || "/logo.png",
             quantity: 1,
             notes: "",
+            meatCount: 1,            // ⬅️ NUEVO
+            breadType: "comun",      // ⬅️ NUEVO
           });
+
         });
 
         setProductos(agrupados);
@@ -275,17 +279,22 @@ export default function Home() {
         {/* PRODUCTOS */}
         <section ref={refs.hamburguesas}>
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList addToCart={addToCart} products={productos.hamburguesas} />
+          <ProductList addToCart={addToCart} products={productos.hamburguesas}  extras={datosLocal.extras} />
         </section>
 
         <section ref={refs.sandwich}>
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
-          <ProductList addToCart={addToCart} products={productos.sandwich} />
+          <ProductList addToCart={addToCart} products={productos.sandwich}  extras={datosLocal.extras} />
         </section>
 
         <section ref={refs.papas}>
           <h2 className="section-title mb-3 mt-5">Papas</h2>
           <ProductList addToCart={addToCart} products={productos.papas} />
+        </section>
+
+        <section ref={refs.otros}>
+          <h2 className="section-title mb-3 mt-5">Otros</h2>
+          <ProductList addToCart={addToCart} products={productos.otros} />
         </section>
 
       </main>
@@ -299,6 +308,8 @@ export default function Home() {
         expanded={expanded}
         onExpandToggle={() => setExpanded((prev) => !prev)}
       />
+
+
     </>
   );
 }

@@ -13,6 +13,7 @@ export default function BottomNavbar({
 		{ id: "hamburguesas", icon: "mdi:hamburger", label: "Burgers" },
 		{ id: "sandwich", icon: "mdi:food-takeout-box", label: "Sandwich" },
 		{ id: "papas", icon: "mdi:french-fries", label: "Papas" },
+		{ id: "otros", icon: "mdi:french-fries", label: "otros" },
 		/* { id: "bebidas", icon: "mdi:cup-outline", label: "Bebidas" }, */
 	];
 

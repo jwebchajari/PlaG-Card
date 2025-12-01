@@ -8,21 +8,21 @@ const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
    Ruta: /api/locales/datos
 =========================================================== */
 export async function GET() {
-	try {
-		const snapshot = await get(ref(db, `locales/${LOCAL}/datos`));
+    try {
+        const snapshot = await get(ref(db, `locales/${LOCAL}/datos`));
 
-		if (!snapshot.exists()) {
-			return Response.json({});
-		}
+        if (!snapshot.exists()) {
+            return Response.json({});
+        }
 
-		return Response.json(snapshot.val());
-	} catch (error) {
-		console.error("GET /api/locales/datos ERROR:", error);
-		return Response.json(
-			{ error: "No se pudieron obtener los datos" },
-			{ status: 500 }
-		);
-	}
+        return Response.json(snapshot.val());
+    } catch (error) {
+        console.error("GET /api/locales/datos ERROR:", error);
+        return Response.json(
+            { error: "No se pudieron obtener los datos" },
+            { status: 500 }
+        );
+    }
 }
 
 /* ===========================================================
@@ -30,30 +30,35 @@ export async function GET() {
    Ruta: /api/locales/datos
 =========================================================== */
 export async function PUT(req) {
-	try {
-		const body = await req.json();
+    try {
+        const body = await req.json();
 
-		const data = {
-			whatsapp: body.whatsapp ?? "",
-			direccion: body.direccion ?? "",
-			alias: body.alias ?? "", // 👈 NUEVO CAMPO PARA TRANSFERENCIAS
+        const data = {
+            whatsapp: body.whatsapp ?? "",
+            direccion: body.direccion ?? "",
+            alias: body.alias ?? "",
 
-			redes: {
-				instagram: body.redes?.instagram ?? "",
-				facebook: body.redes?.facebook ?? "",
-				twitter: body.redes?.twitter ?? "",
-			},
-		};
+            // ⭐ NUEVOS CAMPOS CONFIGURABLES
+            extras: {
+                carne: body.extras?.carne ?? 1500,
+                panEspecial: body.extras?.panEspecial ?? 500,
+            },
 
-		// UPDATE mantiene otros datos existentes (banner, horarios, etc)
-		await update(ref(db, `locales/${LOCAL}/datos`), data);
+            redes: {
+                instagram: body.redes?.instagram ?? "",
+                facebook: body.redes?.facebook ?? "",
+                twitter: body.redes?.twitter ?? "",
+            },
+        };
 
-		return Response.json({ ok: true });
-	} catch (error) {
-		console.error("PUT /api/locales/datos ERROR:", error);
-		return Response.json(
-			{ error: "Error al actualizar los datos" },
-			{ status: 500 }
-		);
-	}
+        await update(ref(db, `locales/${LOCAL}/datos`), data);
+
+        return Response.json({ ok: true });
+    } catch (error) {
+        console.error("PUT /api/locales/datos ERROR:", error);
+        return Response.json(
+            { error: "Error al actualizar los datos" },
+            { status: 500 }
+        );
+    }
 }

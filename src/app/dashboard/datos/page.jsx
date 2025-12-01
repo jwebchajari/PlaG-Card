@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 export default function DatosDelLocal() {
     const [form, setForm] = useState(null);
 
-    // Cargar datos desde Firebase
+    // Cargar datos desde API
     useEffect(() => {
         async function load() {
             const res = await fetch("/api/locales/datos");
@@ -16,33 +16,53 @@ export default function DatosDelLocal() {
                 direccion: data.direccion || "",
                 whatsapp: data.whatsapp || "",
                 alias: data.alias || "",
+
+                extras: {
+                    carne: data.extras?.carne || 1500,
+                    panEspecial: data.extras?.panEspecial || 500,
+                },
+
                 redes: {
                     instagram: data.redes?.instagram || "",
                     facebook: data.redes?.facebook || "",
                     twitter: data.redes?.twitter || "",
-                }
+                },
             });
         }
 
         load();
     }, []);
 
-    if (!form) return      <LoadingScreen />;
+    if (!form) return <LoadingScreen />;
+
+    /* ==========================
+       HANDLERS
+    ========================== */
 
     function handleChange(e) {
         const { name, value } = e.target;
 
-        // Campos de redes
+        // Redes sociales
         if (name.startsWith("redes.")) {
             const key = name.split(".")[1];
             setForm((prev) => ({
                 ...prev,
-                redes: { ...prev.redes, [key]: value }
+                redes: { ...prev.redes, [key]: value },
             }));
             return;
         }
 
-        // Campos comunes
+        // Extras
+        if (name.startsWith("extras.")) {
+            const key = name.split(".")[1];
+            setForm((prev) => ({
+                ...prev,
+                extras: { ...prev.extras, [key]: Number(value) },
+            }));
+            return;
+        }
+
+        // Datos simples
         setForm({ ...form, [name]: value });
     }
 
@@ -57,6 +77,10 @@ export default function DatosDelLocal() {
         if (res.ok) alert("Datos actualizados correctamente");
         else alert("Error al guardar");
     }
+
+    /* ==========================
+       UI
+    ========================== */
 
     return (
         <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
@@ -100,6 +124,31 @@ export default function DatosDelLocal() {
 
                 <hr style={{ margin: "20px 0", opacity: 0.3 }} />
 
+                {/* ============ NUEVO ============ */}
+                <h3 style={{ margin: "0 0 10px 0" }}>Extras del menú</h3>
+
+                <label>Precio por carne extra (₲)</label>
+                <input
+                    type="number"
+                    name="extras.carne"
+                    value={form.extras.carne}
+                    onChange={handleChange}
+                    min={0}
+                    placeholder="Ej: 1500"
+                />
+
+                <label>Precio por pan especial (₲)</label>
+                <input
+                    type="number"
+                    name="extras.panEspecial"
+                    value={form.extras.panEspecial}
+                    onChange={handleChange}
+                    min={0}
+                    placeholder="Ej: 500"
+                />
+
+                <hr style={{ margin: "20px 0", opacity: 0.3 }} />
+
                 <h3 style={{ margin: "0 0 10px 0" }}>Redes sociales</h3>
 
                 {/* Instagram */}
@@ -136,7 +185,9 @@ export default function DatosDelLocal() {
                         color: "white",
                         padding: 12,
                         borderRadius: 6,
-                        marginTop: 20
+                        marginTop: 20,
+                        fontSize: "1rem",
+                        fontWeight: "600",
                     }}
                 >
                     Guardar datos

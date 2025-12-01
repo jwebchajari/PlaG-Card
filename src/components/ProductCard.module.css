@@ -1,83 +1,125 @@
+/* =============================== */
+/* CARD GENERAL                    */
+/* =============================== */
 .card {
-    max-width: 95%;
-    display: flex;
-    background: var(--surface-1);
-    border-radius: 16px;
-    overflow: hidden;
-
-    box-shadow: var(--shadow-soft);
-    border: 1px solid var(--color-border-soft);
-
+    width: 95%;
     margin: auto;
     margin-top: 1em;
-
+    border-radius: 16px;
+    background: var(--surface-1);
+    border: 1px solid var(--color-border-soft);
+    overflow: hidden;
+    box-shadow: var(--shadow-soft);
     transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
-/* Hover mobile-friendly */
-.card:active,
-.card:hover {
+.card:hover,
+.card:active {
     transform: translateY(-2px);
     box-shadow: var(--shadow-hover);
-    -webkit-transform: translateY(-2px);
-    -moz-transform: translateY(-2px);
-    -ms-transform: translateY(-2px);
-    -o-transform: translateY(-2px);
+}
+
+/* =============================== */
+/* PARTE SUPERIOR (IMG + INFO)     */
+/* =============================== */
+.topRow {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+}
+
+.imgWrapper {
+    position: relative;
 }
 
 .img {
     width: 120px;
     height: 120px;
     object-fit: cover;
-    border-radius: 0;
+    border-radius: 12px;
 }
 
+/* =============================== */
+/* BADGE OFERTA                    */
+/* =============================== */
+.offerBadge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #ff3b30;
+    color: white;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* =============================== */
+/* INFORMACIÓN                     */
+/* =============================== */
 .info {
     flex: 1;
-    padding: 12px 14px;
+    padding: 4px 2px;
 }
 
 .title {
-    font-size: 1rem;
-    font-weight: 700;
     margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
     color: var(--color-text-main);
 }
 
 .desc {
+    margin: 4px 0 8px;
     font-size: 0.85rem;
     color: var(--color-text-muted);
-    margin-top: 4px;
     line-height: 1.3;
 }
 
-.bottomRow {
-    margin-top: 12px;
+/* =============================== */
+/* PRECIO + BOTÓN                  */
+/* =============================== */
+.priceAndButton {
+    margin-top: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+.priceBox {
+    display: flex;
+    flex-direction: column;
+}
+
+.oldPrice {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.offerPrice {
+    color: #d10000;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
 .price {
-    font-weight: 700;
-    font-size: 1rem;
+    font-weight: bold;
+    font-size: 1.2rem;
     color: var(--color-primary-dark);
 }
 
-/* BOTÓN AGREGAR — estilo premium */
+/* BOTÓN AGREGAR */
 .addBtn {
-    background: var(--color-primary); /* morado */
+    background: var(--color-primary);
     color: white;
     border: none;
-
     padding: 8px 16px;
     border-radius: var(--radius-pill);
-
     font-weight: 600;
     font-size: 0.9rem;
-
     box-shadow: var(--shadow-soft);
-
     transition: background 0.2s ease, transform 0.15s ease;
 }
 
@@ -90,43 +132,67 @@
     transform: scale(0.96);
 }
 
-
-/* Badge de oferta */
-.offerBadge {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    background: #ff3b30;
-    color: white;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: bold;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+/* =============================== */
+/* BLOQUE DE OPCIONES (ABAJO)      */
+/* =============================== */
+.optionsBlock {
+    padding: 12px;
+    border-top: 1px solid var(--color-border-soft);
+    background: #fafafa;
 }
 
-/* Caja de precios */
-.priceBox {
+.optionLabel {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* Fila carne (+/-) */
+.optionRow {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
-.oldPrice {
-    text-decoration: line-through;
-    color: #888;
-    font-size: 14px;
-    margin: 0;
-    line-height: 1;
-}
-
-.offerPrice {
-    color: #d10000;
-    font-weight: bold;
+/* Botones +/- */
+.selectorBtn {
+    width: 28px;
+    height: 28px;
+    background: #f4f4f4;
+    border-radius: 6px;
+    border: 1px solid #ccc;
     font-size: 18px;
-    line-height: 1;
+    font-weight: bold;
+    cursor: pointer;
 }
 
-.price {
-    font-weight: bold;
-    font-size: 18px;
+.selectorBtn:hover {
+    background: #ddd;
+}
+
+/* Contador de carne */
+.qtyDisplay {
+    font-size: 1rem;
+    font-weight: 700;
+    width: 20px;
+    text-align: center;
+}
+
+/* Precio extra carne o pan */
+.extraText {
+    font-size: 0.85rem;
+    color: #d35400;
+    font-weight: 700;
+}
+
+/* Selector de pan */
+.select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.9rem;
 }

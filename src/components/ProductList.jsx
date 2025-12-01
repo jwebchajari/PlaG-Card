@@ -5,16 +5,15 @@ import dynamic from "next/dynamic";
 import ProductCard from "./ProductCard";
 import styles from "./ProductList.module.css";
 
-// Cargar modal de forma diferida → más rápido el primer render
+// Modal diferido
 const ImageModal = dynamic(() => import("./ImageModal"), {
     ssr: false,
     loading: () => null,
 });
 
-function ProductList({ products, addToCart }) {
+export default function ProductList({ products, addToCart, extras }) {
     const [selectedProduct, setSelectedProduct] = useState(null);
 
-    // Memorizar lista para evitar renders innecesarios
     const memoProducts = useMemo(() => products || [], [products]);
 
     return (
@@ -24,8 +23,11 @@ function ProductList({ products, addToCart }) {
                     <ProductCard
                         key={product.id}
                         product={product}
+                        category={product.category}
                         addToCart={addToCart}
                         onImageClick={setSelectedProduct}
+                        extraCarne={extras?.carne || 0}          // ⭐ desde Firebase
+                        extraPanEspecial={extras?.panEspecial || 0} // ⭐ desde Firebase
                     />
                 ))}
             </div>
@@ -37,6 +39,3 @@ function ProductList({ products, addToCart }) {
         </>
     );
 }
-
-// Evita renders repetidos si las props no cambian
-export default React.memo(ProductList);
