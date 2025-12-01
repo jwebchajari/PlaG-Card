@@ -3,33 +3,54 @@ import { ref, get, set } from "firebase/database";
 
 const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
 
-// GET → obtener horarios completos
 export async function GET() {
-	try {
-		const snapshot = await get(ref(db, `locales/${LOCAL}/horarios`));
-		return Response.json(snapshot.val() || {});
-	} catch (error) {
-		console.error("GET /api/locales/horarios ERROR:", error);
-		return Response.json(
-			{ error: "No se pudieron obtener horarios" },
-			{ status: 500 }
-		);
-	}
+    try {
+        const snap = await get(ref(db, `locales/${LOCAL}/horarios`));
+        return Response.json(snap.val() || {});
+    } catch (e) {
+        console.error("GET horarios ERROR:", e);
+        return Response.json({ error: "Error al obtener horarios" }, { status: 500 });
+    }
 }
 
-// PUT → guardar horarios
 export async function PUT(req) {
-	try {
-		const body = await req.json();
+    try {
+        const body = await req.json();
 
-		await set(ref(db, `locales/${LOCAL}/horarios`), body);
+        if (!body || typeof body !== "object") {
+            return Response.json(
+                { error: "Body inválido" },
+                { status: 400 }
+            );
+        }
 
-		return Response.json({ ok: true });
-	} catch (error) {
-		console.error("PUT /api/locales/horarios ERROR:", error);
-		return Response.json(
-			{ error: "No se pudieron guardar los horarios" },
-			{ status: 500 }
-		);
-	}
+        const diasValidos = [
+            "lunes", "martes", "miércoles",
+            "jueves", "viernes", "sábado", "domingo"
+        ];
+
+        for (const dia of diasValidos) {
+            if (!body[dia]) {
+                return Response.json(
+                    { error: `Falta el día: ${dia}` },
+                    { status: 400 }
+                );
+            }
+
+            body[dia].cerrado = Boolean(body[dia].cerrado);
+            body[dia].franjas = Array.isArray(body[dia].franjas)
+                ? body[dia].franjas
+                : [];
+        }
+
+        await set(ref(db, `locales/${LOCAL}/horarios`), body);
+
+        return Response.json({ ok: true });
+    } catch (error) {
+        console.error("PUT horarios ERROR:", error);
+        return Response.json(
+            { error: "Error al guardar horarios" },
+            { status: 500 }
+        );
+    }
 }

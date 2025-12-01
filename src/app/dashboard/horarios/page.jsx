@@ -2,157 +2,123 @@
 
 import { useEffect, useState } from "react";
 
-export default function HorariosPage() {
-    const dias = [
-        "lunes",
-        "martes",
-        "miércoles",
-        "jueves",
-        "viernes",
-        "sábado",
-        "domingo"
-    ];
+const DIAS = [
+    "lunes",
+    "martes",
+    "miércoles",
+    "jueves",
+    "viernes",
+    "sábado",
+    "domingo",
+];
 
-    // ===========================
-    // ESTADO SEGURO (no rompe)
-    // ===========================
-    const estructuraDia = {
-        cerrado: false,
-        franjas: []
-    };
+export default function Horarios() {
+    const [horarios, setHorarios] = useState(null);
 
-    const estadoInicial = {
-        lunes: { ...estructuraDia },
-        martes: { ...estructuraDia },
-        miércoles: { ...estructuraDia },
-        jueves: { ...estructuraDia },
-        viernes: { ...estructuraDia },
-        sábado: { ...estructuraDia },
-        domingo: { ...estructuraDia }
-    };
-
-    const [horarios, setHorarios] = useState(estadoInicial);
-    const [loading, setLoading] = useState(true);
-
-    // ===========================
-    // CARGAR HORARIOS
-    // ===========================
+    // Cargar horarios desde Firebase
     useEffect(() => {
         async function load() {
-            try {
-                const res = await fetch("/api/locales/horarios");
-                const data = await res.json();
+            const res = await fetch("/api/locales/horarios");
+            const data = await res.json();
 
-                const formateado = {};
+            // Si no existen horarios, los inicializamos
+            const inicial = {};
+            DIAS.forEach((dia) => {
+                inicial[dia] = data[dia] || {
+                    cerrado: false,
+                    franjas: [],
+                };
+            });
 
-                dias.forEach((dia) => {
-                    formateado[dia] = {
-                        cerrado: data?.[dia]?.cerrado ?? false,
-                        franjas: Array.isArray(data?.[dia]?.franjas)
-                            ? data[dia].franjas
-                            : []
-                    };
-                });
-
-                setHorarios(formateado);
-            } catch (err) {
-                console.error("Error cargando horarios:", err);
-            } finally {
-                setLoading(false);
-            }
+            setHorarios(inicial);
         }
 
         load();
     }, []);
 
-    // ===========================
-    // MANEJO DE FRANJAS
-    // ===========================
-    const agregarFranja = (dia) => {
-        setHorarios((prev) => ({
-            ...prev,
+    if (!horarios) return <p style={{ padding: 20 }}>Cargando...</p>;
+
+    function toggleCerrado(dia) {
+        setHorarios({
+            ...horarios,
             [dia]: {
-                ...prev[dia],
-                franjas: [...prev[dia].franjas, { inicio: "08:00", fin: "16:00" }]
-            }
-        }));
-    };
+                ...horarios[dia],
+                cerrado: !horarios[dia].cerrado,
+            },
+        });
+    }
 
-    const updateFranja = (dia, index, campo, valor) => {
-        setHorarios((prev) => ({
-            ...prev,
+    function cambiarFranja(dia, index, campo, valor) {
+        const nuevasFranjas = [...horarios[dia].franjas];
+        nuevasFranjas[index][campo] = valor;
+
+        setHorarios({
+            ...horarios,
             [dia]: {
-                ...prev[dia],
-                franjas: prev[dia].franjas.map((f, i) =>
-                    i === index ? { ...f, [campo]: valor } : f
-                )
-            }
-        }));
-    };
+                ...horarios[dia],
+                franjas: nuevasFranjas,
+            },
+        });
+    }
 
-    const borrarFranja = (dia, index) => {
-        setHorarios((prev) => ({
-            ...prev,
+    function agregarFranja(dia) {
+        const nuevasFranjas = [
+            ...horarios[dia].franjas,
+            { desde: "08:00", hasta: "12:00" },
+        ];
+
+        setHorarios({
+            ...horarios,
             [dia]: {
-                ...prev[dia],
-                franjas: prev[dia].franjas.filter((_, i) => i !== index)
-            }
-        }));
-    };
+                ...horarios[dia],
+                franjas: nuevasFranjas,
+            },
+        });
+    }
 
-    const toggleCerrado = (dia) => {
-        setHorarios((prev) => ({
-            ...prev,
+    function eliminarFranja(dia, index) {
+        const nuevasFranjas = horarios[dia].franjas.filter((_, i) => i !== index);
+
+        setHorarios({
+            ...horarios,
             [dia]: {
-                ...prev[dia],
-                cerrado: !prev[dia].cerrado,
-                franjas: !prev[dia].cerrado ? [] : prev[dia].franjas
-            }
-        }));
-    };
+                ...horarios[dia],
+                franjas: nuevasFranjas,
+            },
+        });
+    }
 
-    // ===========================
-    // GUARDAR EN FIREBASE
-    // ===========================
-    const guardar = async () => {
-        try {
-            const res = await fetch("/api/locales/horarios", {
-                method: "PUT",
-                body: JSON.stringify(horarios)
-            });
+    async function guardar() {
+        const res = await fetch("/api/locales/horarios", {
+            method: "PUT",
+            body: JSON.stringify(horarios),
+        });
 
-            if (!res.ok) throw new Error();
-
-            alert("Horarios guardados correctamente ✔");
-        } catch (err) {
-            console.error(err);
-            alert("Error al guardar horarios");
+        if (res.ok) {
+            alert("Horarios guardados correctamente");
+        } else {
+            alert("Error al guardar");
         }
-    };
-
-    // ===========================
-    // RENDER
-    // ===========================
-    if (loading) return <p style={{ padding: 20 }}>Cargando horarios…</p>;
+    }
 
     return (
-        <div style={{ padding: 20 }}>
-            <h1>Horarios del Local</h1>
+        <div style={{ padding: 20, maxWidth: 700, margin: "0 auto" }}>
+            <h1 style={{ marginBottom: 20 }}>Horarios del local</h1>
 
-            {dias.map((dia) => (
+            {DIAS.map((dia) => (
                 <div
                     key={dia}
                     style={{
-                        marginTop: 20,
-                        border: "1px solid #ddd",
-                        padding: 15,
-                        borderRadius: 10
+                        padding: 16,
+                        border: "1px solid #ccc",
+                        borderRadius: 8,
+                        marginBottom: 20,
                     }}
                 >
-                    <h3 style={{ textTransform: "capitalize" }}>{dia}</h3>
+                    <h2 style={{ textTransform: "capitalize" }}>{dia}</h2>
 
-                    {/* Toggle cerrado */}
-                    <label style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                    {/* Cerrar día */}
+                    <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <input
                             type="checkbox"
                             checked={horarios[dia].cerrado}
@@ -161,71 +127,58 @@ export default function HorariosPage() {
                         No se trabaja este día
                     </label>
 
-                    {/* Si está cerrado, no mostrar franjas */}
-                    {horarios[dia].cerrado ? (
-                        <p style={{ color: "red" }}>Día cerrado</p>
-                    ) : (
+                    {!horarios[dia].cerrado && (
                         <>
-                            {/* LISTA DE FRANJAS */}
-                            {horarios[dia]?.franjas?.map((f, index) => (
+                            {/* Lista de franjas */}
+                            {horarios[dia].franjas.map((f, index) => (
                                 <div
                                     key={index}
                                     style={{
-                                        marginBottom: 10,
-                                        background: "#f8f8f8",
-                                        padding: 10,
-                                        borderRadius: 8
+                                        display: "flex",
+                                        gap: 10,
+                                        alignItems: "center",
+                                        marginTop: 10,
                                     }}
                                 >
-                                    <div style={{ display: "flex", gap: 10 }}>
-                                        <input
-                                            type="time"
-                                            value={f.inicio}
-                                            onChange={(e) =>
-                                                updateFranja(
-                                                    dia,
-                                                    index,
-                                                    "inicio",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                        <input
-                                            type="time"
-                                            value={f.fin}
-                                            onChange={(e) =>
-                                                updateFranja(
-                                                    dia,
-                                                    index,
-                                                    "fin",
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                        <button
-                                            onClick={() => borrarFranja(dia, index)}
-                                            style={{
-                                                background: "red",
-                                                color: "white",
-                                                border: "none",
-                                                padding: "5px 10px",
-                                                borderRadius: 5
-                                            }}
-                                        >
-                                            Borrar
-                                        </button>
-                                    </div>
+                                    <input
+                                        type="time"
+                                        value={f.desde}
+                                        onChange={(e) =>
+                                            cambiarFranja(dia, index, "desde", e.target.value)
+                                        }
+                                    />
+                                    <span>a</span>
+                                    <input
+                                        type="time"
+                                        value={f.hasta}
+                                        onChange={(e) =>
+                                            cambiarFranja(dia, index, "hasta", e.target.value)
+                                        }
+                                    />
+
+                                    <button
+                                        onClick={() => eliminarFranja(dia, index)}
+                                        style={{
+                                            background: "red",
+                                            color: "white",
+                                            padding: "4px 8px",
+                                            borderRadius: 4,
+                                        }}
+                                    >
+                                        X
+                                    </button>
                                 </div>
                             ))}
 
+                            {/* Botón agregar franja */}
                             <button
                                 onClick={() => agregarFranja(dia)}
                                 style={{
                                     marginTop: 10,
-                                    background: "#333",
+                                    background: "#0070f3",
                                     color: "white",
                                     padding: "6px 12px",
-                                    borderRadius: 6
+                                    borderRadius: 6,
                                 }}
                             >
                                 + Agregar franja
@@ -238,12 +191,11 @@ export default function HorariosPage() {
             <button
                 onClick={guardar}
                 style={{
-                    marginTop: 30,
-                    background: "green",
+                    background: "#28a745",
                     color: "white",
-                    padding: "12px 20px",
+                    padding: 12,
                     borderRadius: 8,
-                    fontSize: 16
+                    width: "100%",
                 }}
             >
                 Guardar horarios

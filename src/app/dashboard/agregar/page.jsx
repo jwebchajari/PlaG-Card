@@ -33,7 +33,7 @@ export default function AgregarComida() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const res = await fetch("/api/locales", {
+        const res = await fetch("/api", {
             method: "POST",
             body: JSON.stringify(form),
         });

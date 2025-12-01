@@ -7,9 +7,9 @@ import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import MapModal from "@/components/MapModal";
 import AddToCartToast from "@/components/AddToCartToast";
-import styles from "./Home.module.css";
 import { calcularEstadoDelDia } from "@/utils/horarios";
 import HorariosModal from "@/components/HorariosModal";
+import styles from "./Home.module.css";
 
 export default function Home() {
   /* ========================= ESTADOS ========================= */
@@ -40,9 +40,11 @@ export default function Home() {
   useEffect(() => {
     async function fetchAll() {
       try {
-        // --- 1) COMIDAS ---
-        const prodRes = await fetch("/api/locales");
-        const raw = await prodRes.json(); // objeto { id: { ...comida }, ... }
+        /* ---------- 1) COMIDAS ----------- */
+        const prodRes = await fetch("/api/locales/comidas");
+        if (!prodRes.ok) throw new Error("Error obteniendo comidas");
+
+        const raw = await prodRes.json(); // objeto { id: {...comida} }
 
         const categoriasMap = {
           hamburguesa: "hamburguesas",
@@ -62,83 +64,74 @@ export default function Home() {
           otros: [],
         };
 
-        if (raw && typeof raw === "object") {
-          Object.entries(raw).forEach(([id, item]) => {
-            const catKey =
-              categoriasMap[item.categoria?.toLowerCase()] || "otros";
+        Object.entries(raw || {}).forEach(([id, item]) => {
+          const catKey =
+            categoriasMap[item.categoria?.toLowerCase()] || "otros";
 
-            const basePrice =
-              item.oferta && item.valorOferta
-                ? Number(item.valorOferta)
-                : Number(item.valor);
+          const basePrice =
+            item.oferta && item.valorOferta
+              ? Number(item.valorOferta)
+              : Number(item.valor);
 
-            const price = isNaN(basePrice) ? 0 : basePrice;
+          const price = isNaN(basePrice) ? 0 : basePrice;
 
-            const normalized = {
-              id,
-              name: item.nombre || "",
-              description: item.descripcion || "",
-              price,
-              valorOriginal: Number(item.valor) || 0,
-              valorOferta: item.valorOferta ? Number(item.valorOferta) : null,
-              oferta: Boolean(item.oferta),
-              image: item.imagen || "/logo.png",
-              quantity: 1,
-              notes: "",
-            };
+          const normalized = {
+            id,
+            name: item.nombre || "",
+            description: item.descripcion || "",
+            price,
+            valorOriginal: Number(item.valor) || 0,
+            valorOferta: item.valorOferta ? Number(item.valorOferta) : null,
+            oferta: Boolean(item.oferta),
+            image: item.imagen || "/logo.png",
+            quantity: 1,
+            notes: "",
+          };
 
-            agrupados[catKey].push(normalized);
-          });
-        }
+          agrupados[catKey].push(normalized);
+        });
 
         setProductos(agrupados);
 
-        // --- 2) DATOS DEL LOCAL ---
+        /* ---------- 2) DATOS DEL LOCAL ----------- */
         const datosRes = await fetch("/api/locales/datos");
         const datos = await datosRes.json();
         setDatosLocal(datos || {});
 
-   // --- 3) HORARIOS ---
-const horariosRes = await fetch("/api/locales/horarios");
-const rawHorarios = await horariosRes.json();
+        /* ---------- 3) HORARIOS ----------- */
+        const horariosRes = await fetch("/api/locales/horarios");
+        const rawHorarios = await horariosRes.json();
 
-const diasSemana = [
-  "lunes",
-  "martes",
-  "miércoles",
-  "jueves",
-  "viernes",
-  "sábado",
-  "domingo",
-];
+        const normalizados = {};
+        const diasSemana = [
+          "lunes",
+          "martes",
+          "miércoles",
+          "jueves",
+          "viernes",
+          "sábado",
+          "domingo",
+        ];
 
-const normalizados = {};
+        diasSemana.forEach((dia) => {
+          const info = rawHorarios?.[dia] || {};
 
-diasSemana.forEach((dia) => {
-  const info = rawHorarios?.[dia] || {};
+          const franjas = info.franjas
+            ? Array.isArray(info.franjas)
+              ? info.franjas
+              : Object.values(info.franjas)
+            : [];
 
-  // franjas puede venir como array o como objeto {0:{...},1:{...}}
-  let franjas = [];
+          normalizados[dia] = {
+            cerrado: Boolean(info.cerrado),
+            franjas,
+          };
+        });
 
-  if (Array.isArray(info.franjas)) {
-    franjas = info.franjas;
-  } else if (info.franjas && typeof info.franjas === "object") {
-    franjas = Object.values(info.franjas);
-  }
+        setHorarios(normalizados);
 
-  normalizados[dia] = {
-    cerrado: Boolean(info.cerrado),
-    franjas,
-  };
-});
-
-setHorarios(normalizados);
-
-const estado = calcularEstadoDelDia(normalizados);
-setEstadoLocal(estado);
-
-
-
+        const estado = calcularEstadoDelDia(normalizados);
+        setEstadoLocal(estado);
       } catch (err) {
         console.error("ERROR cargando datos:", err);
       }
@@ -215,7 +208,7 @@ setEstadoLocal(estado);
     }
   }, [activeTab]);
 
-  /* ========================= TOAST Y CARRITO ========================= */
+  /* ========================= TOAST & CARRITO ========================= */
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastProduct, setToastProduct] = useState("");
@@ -250,18 +243,18 @@ setEstadoLocal(estado);
       />
 
       <main className="container mb-5 pb-5" style={{ paddingTop: "72px" }}>
-
-        {/* HERO DINÁMICO */}
+        {/* HERO */}
         <div className={styles.heroCard}>
           <div className={styles.hoursBlock}>
             <h2 className={styles.heroTitle}>
-              {new Date().toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long" })}
+              {new Date().toLocaleDateString("es-AR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
             </h2>
 
-            <p className={styles.hoursText}>
-              {estadoLocal.mensaje}
-            </p>
-
+            <p className={styles.hoursText}>{estadoLocal.mensaje}</p>
           </div>
 
           <button
@@ -271,10 +264,7 @@ setEstadoLocal(estado);
             🕒 Ver horarios
           </button>
 
-          <button
-            className={styles.heroBtn}
-            onClick={() => setShowMap(true)}
-          >
+          <button className={styles.heroBtn} onClick={() => setShowMap(true)}>
             📍 Cómo llegar
           </button>
         </div>
@@ -285,14 +275,10 @@ setEstadoLocal(estado);
           horarios={horarios}
         />
 
-
         {/* PRODUCTOS */}
         <section ref={hamburguesasRef}>
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList
-            addToCart={addToCart}
-            products={productos.hamburguesas}
-          />
+          <ProductList addToCart={addToCart} products={productos.hamburguesas} />
         </section>
 
         <section ref={sandwichRef}>

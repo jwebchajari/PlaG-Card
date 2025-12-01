@@ -7,347 +7,350 @@ import { Icon } from "@iconify/react";
 import styles from "./ComprarPage.module.css";
 
 export default function ComprarPage() {
-    const router = useRouter();
+	const router = useRouter();
 
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(true);
+	const [cartItems, setCartItems] = useState([]);
+	const [loading, setLoading] = useState(true);
 
-    /* ====================== DATOS DEL LOCAL ====================== */
-    const [localWhatsapp, setLocalWhatsapp] = useState("");
-    const [localDireccion, setLocalDireccion] = useState("");
+	/* ====================== DATOS DEL LOCAL ====================== */
+	const [localWhatsapp, setLocalWhatsapp] = useState("");
+	const [localDireccion, setLocalDireccion] = useState("");
 
-    /* ====================== FORM ====================== */
-    const [nombre, setNombre] = useState("");
-    const [metodo, setMetodo] = useState("retiro");
-    const [direccion, setDireccion] = useState("");
-    const [obsEntrega, setObsEntrega] = useState("");
-    const [sending, setSending] = useState(false);
-    const [errorMsg, setErrorMsg] = useState("");
+	/* ====================== FORM ====================== */
+	const [nombre, setNombre] = useState("");
+	const [metodo, setMetodo] = useState("retiro");
+	const [direccion, setDireccion] = useState("");
+	const [obsEntrega, setObsEntrega] = useState("");
+	const [sending, setSending] = useState(false);
+	const [errorMsg, setErrorMsg] = useState("");
 
-    /* =====================================================
-       Cargar datos del local
-    ===================================================== */
-    useEffect(() => {
-        async function load() {
-            try {
-                const res = await fetch("/api/locales/datos");
-                const data = await res.json();
+	/* =====================================================
+	   Cargar datos del local desde la API
+	===================================================== */
+	useEffect(() => {
+		async function load() {
+			try {
+				const res = await fetch("/api/locales/datos");
+				const data = await res.json();
 
-                setLocalWhatsapp(data.whatsapp || "");
-                setLocalDireccion(data.direccion || "");
-            } catch (err) {
-                console.error("Error cargando datos del local:", err);
-            }
-        }
+				setLocalWhatsapp(data.whatsapp || "");
+				setLocalDireccion(data.direccion || "");
+			} catch (err) {
+				console.error("Error cargando datos del local:", err);
+			}
+		}
 
-        load();
-    }, []);
+		load();
+	}, []);
 
-    /* =====================================================
-       Cargar carrito y NORMALIZARLO
-    ===================================================== */
-    useEffect(() => {
-        if (typeof window === "undefined") return;
+	/* =====================================================
+	   Cargar carrito
+	===================================================== */
+	useEffect(() => {
+		if (typeof window === "undefined") return;
 
-        const stored = localStorage.getItem("cartData");
-        if (!stored) {
-            setLoading(false);
-            return;
-        }
+		const stored = localStorage.getItem("cartData");
+		if (stored) {
+			try {
+				const { items, timestamp } = JSON.parse(stored);
+				const diff = Date.now() - timestamp;
+				const limit = 3 * 60 * 60 * 1000;
 
-        try {
-            const { items, timestamp } = JSON.parse(stored);
-            const diff = Date.now() - timestamp;
-            const limit = 3 * 60 * 60 * 1000;
+				if (diff < limit && Array.isArray(items) && items.length > 0) {
+					setCartItems(items);
+				} else {
+					localStorage.removeItem("cartData");
+				}
+			} catch {
+				localStorage.removeItem("cartData");
+			}
+		}
 
-            if (!Array.isArray(items) || diff > limit) {
-                localStorage.removeItem("cartData");
-                setLoading(false);
-                return;
-            }
+		setLoading(false);
+	}, []);
 
-            /* 🔥 NORMALIZAR CADA PRODUCTO 🔥 */
-            const normalized = items.map(item => ({
-                id: item.id,
-                name: item.name || item.nombre || "Producto",
-                price: Number(item.price ?? item.valor ?? 0),
-                image: item.image || item.imagen || "/logo.png",
-                quantity: Number(item.quantity ?? 1),
-                notes: item.notes ?? ""
-            }));
+	/* =====================================================
+	   Guardar carrito actualizado
+	===================================================== */
+	useEffect(() => {
+		if (typeof window === "undefined") return;
 
-            setCartItems(normalized);
+		if (cartItems.length > 0) {
+			localStorage.setItem(
+				"cartData",
+				JSON.stringify({ items: cartItems, timestamp: Date.now() })
+			);
+		} else {
+			localStorage.removeItem("cartData");
+		}
+	}, [cartItems]);
 
-        } catch (e) {
-            console.error("Error cargando carrito:", e);
-            localStorage.removeItem("cartData");
-        }
+	/* =====================================================
+	   Helpers de carrito
+	===================================================== */
+	const updateCartItemQuantity = (id, newQuantity) => {
+		setCartItems((prev) =>
+			prev.map((item) =>
+				item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+			)
+		);
+	};
 
-        setLoading(false);
-    }, []);
+	const updateCartItemNotes = (id, notes) => {
+		setCartItems((prev) =>
+			prev.map((item) => (item.id === id ? { ...item, notes } : item))
+		);
+	};
 
-    /* =====================================================
-       Guardar carrito
-    ===================================================== */
-    useEffect(() => {
-        if (typeof window === "undefined") return;
+	const removeCartItem = (id) => {
+		setCartItems((prev) => prev.filter((item) => item.id !== id));
+	};
 
-        if (cartItems.length > 0) {
-            localStorage.setItem(
-                "cartData",
-                JSON.stringify({ items: cartItems, timestamp: Date.now() })
-            );
-        } else {
-            localStorage.removeItem("cartData");
-        }
-    }, [cartItems]);
+	const totalPrice = cartItems.reduce(
+		(acc, item) => acc + item.price * item.quantity,
+		0
+	);
 
-    /* =====================================================
-       Helpers del carrito
-    ===================================================== */
-    const updateCartItemQuantity = (id, newQuantity) => {
-        setCartItems(prev =>
-            prev.map(item =>
-                item.id === id
-                    ? { ...item, quantity: Math.max(1, newQuantity) }
-                    : item
-            )
-        );
-    };
+	/* =====================================================
+	   Error elegante
+	===================================================== */
+	const showError = (msg) => {
+		setErrorMsg(msg);
+		setTimeout(() => setErrorMsg(""), 2500);
+	};
 
-    const updateCartItemNotes = (id, notes) => {
-        setCartItems(prev =>
-            prev.map(item =>
-                item.id === id ? { ...item, notes } : item
-            )
-        );
-    };
+	/* =====================================================
+	   Enviar WhatsApp
+	===================================================== */
+	const sendWhatsappOrder = () => {
+		if (!nombre.trim()) return showError("Ingresá tu nombre.");
+		if (metodo === "envio" && !direccion.trim())
+			return showError("Ingresá tu dirección.");
+		if (cartItems.length === 0)
+			return showError("Tu carrito está vacío.");
+		if (!localWhatsapp)
+			return showError("El local no tiene WhatsApp configurado.");
 
-    const removeCartItem = id => {
-        setCartItems(prev => prev.filter(item => item.id !== id));
-    };
+		setSending(true);
 
-    const totalPrice = cartItems.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-    );
+		let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
+		mensaje += `👤 *Cliente:* ${nombre}%0A`;
+		mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"}%0A`;
 
-    const showError = msg => {
-        setErrorMsg(msg);
-        setTimeout(() => setErrorMsg(""), 2500);
-    };
+		if (metodo === "retiro") {
+			mensaje += `📍 *Retira en:* ${localDireccion || "Local"}%0A`;
+		}
 
-    /* =====================================================
-       Enviar WhatsApp
-    ===================================================== */
-    const sendWhatsappOrder = () => {
-        if (!nombre.trim()) return showError("Ingresá tu nombre.");
-        if (metodo === "envio" && !direccion.trim()) return showError("Ingresá tu dirección.");
-        if (cartItems.length === 0) return showError("Tu carrito está vacío.");
-        if (!localWhatsapp) return showError("El local no tiene WhatsApp configurado.");
+		if (metodo === "envio") {
+			mensaje += `🏠 *Dirección del cliente:* ${direccion}%0A`;
+			if (obsEntrega.trim()) mensaje += `📌 *Observaciones:* ${obsEntrega}%0A`;
+		}
 
-        setSending(true);
+		mensaje += `%0A*Detalle del pedido:*%0A`;
 
-        let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
-        mensaje += `👤 *Cliente:* ${nombre}%0A`;
-        mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"}%0A`;
+		cartItems.forEach((item) => {
+			mensaje += `• ${item.quantity} x ${item.name} — $${(
+				item.price * item.quantity
+			).toFixed(2)}%0A`;
+			if (item.notes?.trim())
+				mensaje += `  📝 Nota: ${item.notes}%0A`;
+		});
 
-        if (metodo === "retiro") {
-            mensaje += `📍 *Retira en:* ${localDireccion || "Local"}%0A`;
-        }
+		mensaje += `%0A💵 *Total:* $${totalPrice.toFixed(2)}%0A`;
+		mensaje += `%0A¡Gracias por tu compra! 🙌`;
 
-        if (metodo === "envio") {
-            mensaje += `🏠 *Dirección:* ${direccion}%0A`;
-            if (obsEntrega.trim())
-                mensaje += `📌 *Observaciones:* ${obsEntrega}%0A`;
-        }
+		const url = `https://wa.me/${localWhatsapp}?text=${mensaje}`;
+		window.open(url, "_blank");
 
-        mensaje += `%0A*Detalle del pedido:*%0A`;
+		setTimeout(() => {
+			setSending(false);
+			router.push("/");
+		}, 800);
+	};
 
-        cartItems.forEach(item => {
-            mensaje += `• ${item.quantity} x ${item.name} — $${(
-                item.price * item.quantity
-            ).toFixed(2)}%0A`;
+	/* =====================================================
+	   Render
+	===================================================== */
 
-            if (item.notes?.trim())
-                mensaje += `  📝 Nota: ${item.notes}%0A`;
-        });
+	const handleBack = () => router.push("/");
 
-        mensaje += `%0A💵 *Total:* $${totalPrice.toFixed(2)}%0A`;
+	if (loading) {
+		return (
+			<div className={styles.loadingScreen}>
+				<p>Cargando carrito…</p>
+			</div>
+		);
+	}
 
-        const url = `https://wa.me/${localWhatsapp}?text=${mensaje}`;
-        window.open(url, "_blank");
+	if (!loading && cartItems.length === 0) {
+		return (
+			<div className={styles.emptyScreen}>
+				<Icon icon="lucide:shopping-bag" width={60} className={styles.emptyIcon} />
+				<h4 className="mb-2">Tu carrito está vacío</h4>
+				<p className="text-muted mb-4">
+					Volvé al menú y agregá algunas hamburguesas 🍔
+				</p>
+				<Button variant="primary" onClick={handleBack}>
+					Volver al menú
+				</Button>
+			</div>
+		);
+	}
 
-        setTimeout(() => {
-            setSending(false);
-            router.push("/");
-        }, 800);
-    };
+	return (
+		<div className={styles.container}>
 
-    /* =====================================================
-       Render
-    ===================================================== */
+			{/* CABECERA */}
+			<div className={styles.headerRow}>
+				<Button variant="link" className={styles.backBtn} onClick={handleBack}>
+					<Icon icon="mdi:chevron-left" width={22} />
+					<span>Seguir comprando</span>
+				</Button>
+				<h3 className="m-0 fw-bold">Tu pedido</h3>
+				<div style={{ width: 90 }} />
+			</div>
 
-    const handleBack = () => router.push("/");
+			{errorMsg && (
+				<Alert variant="danger" className={styles.alert}>
+					{errorMsg}
+				</Alert>
+			)}
 
-    if (loading) {
-        return (
-            <div className={styles.loadingScreen}>
-                <p>Cargando carrito…</p>
-            </div>
-        );
-    }
+			{/* ITEMS */}
+			<div className="mb-3">
+				{cartItems.map((item) => (
+					<div key={item.id} className={styles.cardItem}>
+						<img src={item.image} alt={item.name} className={styles.cardImg} />
 
-    if (!loading && cartItems.length === 0) {
-        return (
-            <div className={styles.emptyScreen}>
-                <Icon icon="lucide:shopping-bag" width={60} className={styles.emptyIcon} />
-                <h4 className="mb-2">Tu carrito está vacío</h4>
-                <p className="text-muted mb-4">Volvé al menú y agregá algo 🍔</p>
-                <Button variant="primary" onClick={handleBack}>Volver al menú</Button>
-            </div>
-        );
-    }
+						<div className="flex-grow-1">
+							<div className={styles.cardHead}>
+								<div>
+									<h6 className={styles.cardTitle}>{item.name}</h6>
+									<p className={styles.cardSub}>
+										${item.price} x {item.quantity} = $
+										{(item.price * item.quantity).toFixed(2)}
+									</p>
+								</div>
 
-    return (
-        <div className={styles.container}>
+								<button
+									className={styles.removeBtn}
+									onClick={() => removeCartItem(item.id)}
+								>
+									<Icon icon="lucide:trash-2" width={18} />
+								</button>
+							</div>
 
-            {/* CABECERA */}
-            <div className={styles.headerRow}>
-                <Button variant="link" className={styles.backBtn} onClick={handleBack}>
-                    <Icon icon="mdi:chevron-left" width={22} />
-                    <span>Seguir comprando</span>
-                </Button>
-                <h3 className="m-0 fw-bold">Tu pedido</h3>
-                <div style={{ width: 90 }} />
-            </div>
+							<div className={styles.qtyRow}>
+								<Button
+									size="sm"
+									variant="outline-secondary"
+									className={styles.qtyBtn}
+									onClick={() =>
+										updateCartItemQuantity(item.id, item.quantity - 1)
+									}
+									disabled={item.quantity <= 1}
+								>
+									-
+								</Button>
 
-            {errorMsg && (
-                <Alert variant="danger" className={styles.alert}>{errorMsg}</Alert>
-            )}
+								<span className="fw-bold">{item.quantity}</span>
 
-            {/* ITEMS */}
-            <div className="mb-3">
-                {cartItems.map(item => (
-                    <div key={item.id} className={styles.cardItem}>
-                        <img src={item.image} alt={item.name} className={styles.cardImg} />
+								<Button
+									size="sm"
+									variant="outline-secondary"
+									className={styles.qtyBtn}
+									onClick={() =>
+										updateCartItemQuantity(item.id, item.quantity + 1)
+									}
+								>
+									+
+								</Button>
+							</div>
 
-                        <div className="flex-grow-1">
-                            <div className={styles.cardHead}>
-                                <div>
-                                    <h6 className={styles.cardTitle}>{item.name}</h6>
-                                    <p className={styles.cardSub}>
-                                        ${item.price} x {item.quantity} = $
-                                        {(item.price * item.quantity).toFixed(2)}
-                                    </p>
-                                </div>
+							<Form.Control
+								size="sm"
+								placeholder="Notas (sin cebolla, extra cheddar...)"
+								value={item.notes || ""}
+								onChange={(e) => updateCartItemNotes(item.id, e.target.value)}
+							/>
+						</div>
+					</div>
+				))}
+			</div>
 
-                                <button
-                                    className={styles.removeBtn}
-                                    onClick={() => removeCartItem(item.id)}
-                                >
-                                    <Icon icon="lucide:trash-2" width={18} />
-                                </button>
-                            </div>
+			{/* TOTAL */}
+			<div className={styles.totalRow}>
+				<span className={styles.totalLabel}>Total:</span>
+				<span className={styles.totalPrice}>${totalPrice.toFixed(2)}</span>
+			</div>
 
-                            <div className={styles.qtyRow}>
-                                <Button
-                                    size="sm"
-                                    variant="outline-secondary"
-                                    className={styles.qtyBtn}
-                                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-                                    disabled={item.quantity <= 1}
-                                >
-                                    -
-                                </Button>
+			{/* FORM DE CLIENTE */}
+			<div className="mb-4">
+				<Form.Label>Tu nombre</Form.Label>
+				<Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} />
 
-                                <span className="fw-bold">{item.quantity}</span>
+				<Form.Label className="mt-3">Método de entrega</Form.Label>
 
-                                <Button
-                                    size="sm"
-                                    variant="outline-secondary"
-                                    className={styles.qtyBtn}
-                                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-                                >
-                                    +
-                                </Button>
-                            </div>
+				<div className={styles.radioRow}>
+					<Form.Check
+						type="radio"
+						label="Retiro en el local"
+						checked={metodo === "retiro"}
+						onChange={() => setMetodo("retiro")}
+					/>
+					<Form.Check
+						type="radio"
+						label="Envío a domicilio"
+						checked={metodo === "envio"}
+						onChange={() => setMetodo("envio")}
+					/>
+				</div>
 
-                            <Form.Control
-                                size="sm"
-                                placeholder="Notas (sin cebolla, extra cheddar...)"
-                                value={item.notes || ""}
-                                onChange={(e) => updateCartItemNotes(item.id, e.target.value)}
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
+				{metodo === "envio" && (
+					<>
+						<Form.Label className="mt-3">Dirección</Form.Label>
+						<Form.Control
+							value={direccion}
+							onChange={(e) => setDireccion(e.target.value)}
+						/>
 
-            {/* TOTAL */}
-            <div className={styles.totalRow}>
-                <span className={styles.totalLabel}>Total:</span>
-                <span className={styles.totalPrice}>${totalPrice.toFixed(2)}</span>
-            </div>
+						<Form.Label className="mt-3">Observaciones</Form.Label>
+						<Form.Control
+							value={obsEntrega}
+							onChange={(e) => setObsEntrega(e.target.value)}
+						/>
+					</>
+				)}
+			</div>
 
-            {/* FORM */}
-            <div className="mb-4">
-                <Form.Label>Tu nombre</Form.Label>
-                <Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} />
+			{/* BOTONES */}
+			<div className={styles.actionRow}>
+				<Button
+					variant="outline-secondary"
+					className={styles.secondaryBtn}
+					onClick={handleBack}
+				>
+					← Seguir comprando
+				</Button>
 
-                <Form.Label className="mt-3">Método de entrega</Form.Label>
-                <div className={styles.radioRow}>
-                    <Form.Check
-                        type="radio"
-                        label="Retiro en el local"
-                        checked={metodo === "retiro"}
-                        onChange={() => setMetodo("retiro")}
-                    />
-                    <Form.Check
-                        type="radio"
-                        label="Envío a domicilio"
-                        checked={metodo === "envio"}
-                        onChange={() => setMetodo("envio")}
-                    />
-                </div>
-
-                {metodo === "envio" && (
-                    <>
-                        <Form.Label className="mt-3">Dirección</Form.Label>
-                        <Form.Control
-                            value={direccion}
-                            onChange={(e) => setDireccion(e.target.value)}
-                        />
-
-                        <Form.Label className="mt-3">Observaciones</Form.Label>
-                        <Form.Control
-                            value={obsEntrega}
-                            onChange={(e) => setObsEntrega(e.target.value)}
-                        />
-                    </>
-                )}
-            </div>
-
-            {/* ACCIONES */}
-            <div className={styles.actionRow}>
-                <Button variant="outline-secondary" className={styles.secondaryBtn} onClick={handleBack}>
-                    ← Seguir comprando
-                </Button>
-
-                <Button className={styles.whatsappBtn} onClick={sendWhatsappOrder} disabled={sending}>
-                    {sending ? (
-                        <>
-                            <span className="spinner-border spinner-border-sm me-2" />
-                            Enviando...
-                        </>
-                    ) : (
-                        <>
-                            <Icon icon="logos:whatsapp-icon" width={22} className="me-2" />
-                            Enviar pedido por WhatsApp
-                        </>
-                    )}
-                </Button>
-            </div>
-        </div>
-    );
+				<Button
+					className={styles.whatsappBtn}
+					onClick={sendWhatsappOrder}
+					disabled={sending}
+				>
+					{sending ? (
+						<>
+							<span className="spinner-border spinner-border-sm me-2" />
+							Enviando...
+						</>
+					) : (
+						<>
+							<Icon icon="logos:whatsapp-icon" width={22} className="me-2" />
+							Enviar pedido por WhatsApp
+						</>
+					)}
+				</Button>
+			</div>
+		</div>
+	);
 }
