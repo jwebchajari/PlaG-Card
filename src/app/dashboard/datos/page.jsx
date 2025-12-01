@@ -14,6 +14,7 @@ export default function DatosDelLocal() {
             setForm({
                 direccion: data.direccion || "",
                 whatsapp: data.whatsapp || "",
+                alias: data.alias || "",
                 redes: {
                     instagram: data.redes?.instagram || "",
                     facebook: data.redes?.facebook || "",
@@ -40,7 +41,7 @@ export default function DatosDelLocal() {
             return;
         }
 
-        // Campos normales
+        // Campos comunes
         setForm({ ...form, [name]: value });
     }
 
@@ -68,42 +69,63 @@ export default function DatosDelLocal() {
                     gap: 16,
                 }}
             >
+
                 {/* Dirección */}
+                <label style={{ fontWeight: 600 }}>Dirección del local</label>
                 <input
                     name="direccion"
                     value={form.direccion}
                     onChange={handleChange}
-                    placeholder="Dirección del local"
+                    placeholder="Ej: Av. Siempre Viva 742"
                 />
 
                 {/* WhatsApp */}
+                <label style={{ fontWeight: 600 }}>WhatsApp del local</label>
                 <input
                     name="whatsapp"
                     value={form.whatsapp}
                     onChange={handleChange}
-                    placeholder="WhatsApp"
+                    placeholder="Ej: 5491122334455"
                 />
 
-                {/* Redes sociales */}
+                {/* Alias */}
+                <label style={{ fontWeight: 600 }}>Alias o CBU (transferencias)</label>
+                <input
+                    name="alias"
+                    value={form.alias}
+                    onChange={handleChange}
+                    placeholder="Ej: panaderia.lagula.mp"
+                />
+
+                <hr style={{ margin: "20px 0", opacity: 0.3 }} />
+
+                <h3 style={{ margin: "0 0 10px 0" }}>Redes sociales</h3>
+
+                {/* Instagram */}
+                <label>Instagram</label>
                 <input
                     name="redes.instagram"
                     value={form.redes.instagram}
                     onChange={handleChange}
-                    placeholder="Instagram"
+                    placeholder="@username"
                 />
 
+                {/* Facebook */}
+                <label>Facebook</label>
                 <input
                     name="redes.facebook"
                     value={form.redes.facebook}
                     onChange={handleChange}
-                    placeholder="Facebook"
+                    placeholder="Página o perfil"
                 />
 
+                {/* Twitter */}
+                <label>Twitter / X</label>
                 <input
                     name="redes.twitter"
                     value={form.redes.twitter}
                     onChange={handleChange}
-                    placeholder="Twitter"
+                    placeholder="@usuario"
                 />
 
                 <button
@@ -113,6 +135,7 @@ export default function DatosDelLocal() {
                         color: "white",
                         padding: 12,
                         borderRadius: 6,
+                        marginTop: 20
                     }}
                 >
                     Guardar datos

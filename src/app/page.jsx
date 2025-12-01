@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import TopNavbar from "@/components/TopNavbar";
 import BottomNavbar from "@/components/BottomNavbar";
 import ExpandedMenu from "@/components/ExpandedMenu";
@@ -9,43 +9,50 @@ import MapModal from "@/components/MapModal";
 import AddToCartToast from "@/components/AddToCartToast";
 import { calcularEstadoDelDia } from "@/utils/horarios";
 import HorariosModal from "@/components/HorariosModal";
+import LoadingScreen from "@/components/Loading";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 import styles from "./Home.module.css";
+
+// Configuracion de la barra de carga
+NProgress.configure({ showSpinner: false, speed: 450, trickleSpeed: 100 });
 
 export default function Home() {
   /* ========================= ESTADOS ========================= */
   const [activeTab, setActiveTab] = useState("hamburguesas");
   const [expanded, setExpanded] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastProduct, setToastProduct] = useState("");
 
   const [cartItems, setCartItems] = useState([]);
   const [showHorarios, setShowHorarios] = useState(false);
 
-  const [productos, setProductos] = useState({
-    hamburguesas: [],
-    sandwich: [],
-    papas: [],
-    bebidas: [],
-    otros: [],
-  });
-
+  const [productos, setProductos] = useState(null);
   const [datosLocal, setDatosLocal] = useState(null);
   const [horarios, setHorarios] = useState(null);
-  const [estadoLocal, setEstadoLocal] = useState({
-    abierto: true,
-    mensaje: "Cargando...",
-  });
+  const [estadoLocal, setEstadoLocal] = useState(null);
 
   /* ========================= CARGAR DATOS ========================= */
 
   useEffect(() => {
     async function fetchAll() {
       try {
-        /* ---------- 1) COMIDAS ----------- */
-        const prodRes = await fetch("/api/locales/comidas");
-        if (!prodRes.ok) throw new Error("Error obteniendo comidas");
+        NProgress.start();
 
-        const raw = await prodRes.json(); // objeto { id: {...comida} }
+        const [prodRes, datosRes, horariosRes] = await Promise.all([
+          fetch("/api/locales/comidas"),
+          fetch("/api/locales/datos"),
+          fetch("/api/locales/horarios"),
+        ]);
 
+        const [rawProductos, datos, rawHorarios] = await Promise.all([
+          prodRes.json(),
+          datosRes.json(),
+          horariosRes.json(),
+        ]);
+
+        /* ---------- NORMALIZAR COMIDAS ----------- */
         const categoriasMap = {
           hamburguesa: "hamburguesas",
           hamburguesas: "hamburguesas",
@@ -64,7 +71,7 @@ export default function Home() {
           otros: [],
         };
 
-        Object.entries(raw || {}).forEach(([id, item]) => {
+        Object.entries(rawProductos || {}).forEach(([id, item]) => {
           const catKey =
             categoriasMap[item.categoria?.toLowerCase()] || "otros";
 
@@ -73,36 +80,24 @@ export default function Home() {
               ? Number(item.valorOferta)
               : Number(item.valor);
 
-          const price = isNaN(basePrice) ? 0 : basePrice;
-
-          const normalized = {
+          agrupados[catKey].push({
             id,
             name: item.nombre || "",
             description: item.descripcion || "",
-            price,
+            price: basePrice || 0,
             valorOriginal: Number(item.valor) || 0,
             valorOferta: item.valorOferta ? Number(item.valorOferta) : null,
             oferta: Boolean(item.oferta),
             image: item.imagen || "/logo.png",
             quantity: 1,
             notes: "",
-          };
-
-          agrupados[catKey].push(normalized);
+          });
         });
 
         setProductos(agrupados);
-
-        /* ---------- 2) DATOS DEL LOCAL ----------- */
-        const datosRes = await fetch("/api/locales/datos");
-        const datos = await datosRes.json();
         setDatosLocal(datos || {});
 
-        /* ---------- 3) HORARIOS ----------- */
-        const horariosRes = await fetch("/api/locales/horarios");
-        const rawHorarios = await horariosRes.json();
-
-        const normalizados = {};
+        /* ---------- NORMALIZAR HORARIOS ----------- */
         const diasSemana = [
           "lunes",
           "martes",
@@ -113,6 +108,7 @@ export default function Home() {
           "domingo",
         ];
 
+        const normalizados = {};
         diasSemana.forEach((dia) => {
           const info = rawHorarios?.[dia] || {};
 
@@ -129,11 +125,11 @@ export default function Home() {
         });
 
         setHorarios(normalizados);
-
-        const estado = calcularEstadoDelDia(normalizados);
-        setEstadoLocal(estado);
+        setEstadoLocal(calcularEstadoDelDia(normalizados));
       } catch (err) {
         console.error("ERROR cargando datos:", err);
+      } finally {
+        NProgress.done();
       }
     }
 
@@ -141,7 +137,6 @@ export default function Home() {
   }, []);
 
   /* ========================= LOCAL STORAGE CARRITO ========================= */
-
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -149,16 +144,10 @@ export default function Home() {
     if (stored) {
       try {
         const { items, timestamp } = JSON.parse(stored);
-        const diff = Date.now() - timestamp;
-
-        if (diff < 3 * 60 * 60 * 1000 && Array.isArray(items)) {
+        if (Date.now() - timestamp < 3 * 60 * 60 * 1000) {
           setCartItems(items);
-        } else {
-          localStorage.removeItem("cartData");
         }
-      } catch {
-        localStorage.removeItem("cartData");
-      }
+      } catch {}
     }
   }, []);
 
@@ -179,17 +168,11 @@ export default function Home() {
   }, [cartItems]);
 
   /* ========================= SCROLL A SECCIONES ========================= */
-
-  const hamburguesasRef = useRef(null);
-  const sandwichRef = useRef(null);
-  const papasRef = useRef(null);
-  const bebidasRef = useRef(null);
-
   const refs = {
-    hamburguesas: hamburguesasRef,
-    sandwich: sandwichRef,
-    papas: papasRef,
-    bebidas: bebidasRef,
+    hamburguesas: useRef(null),
+    sandwich: useRef(null),
+    papas: useRef(null),
+    bebidas: useRef(null),
   };
 
   const firstScroll = useRef(true);
@@ -208,11 +191,7 @@ export default function Home() {
     }
   }, [activeTab]);
 
-  /* ========================= TOAST & CARRITO ========================= */
-
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastProduct, setToastProduct] = useState("");
-
+  /* ========================= CARRITO ========================= */
   const addToCart = (product) => {
     setCartItems((prev) => {
       const exist = prev.find((i) => i.id === product.id);
@@ -229,15 +208,15 @@ export default function Home() {
     setTimeout(() => setToastVisible(false), 1500);
   };
 
+  /* ========================= LOADING ========================= */
+  if (!productos || !datosLocal || !horarios || !estadoLocal) {
+    return <LoadingScreen />;
+  }
+
   /* ========================= RENDER ========================= */
-
-  if (!datosLocal || !horarios)
-    return <p style={{ padding: 20 }}>Cargando menú...</p>;
-
   return (
     <>
       <AddToCartToast show={toastVisible} productName={toastProduct} />
-
       <TopNavbar
         totalItems={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
       />
@@ -276,25 +255,21 @@ export default function Home() {
         />
 
         {/* PRODUCTOS */}
-        <section ref={hamburguesasRef}>
+        <section ref={refs.hamburguesas}>
           <h2 className="section-title mb-3">Hamburguesas</h2>
           <ProductList addToCart={addToCart} products={productos.hamburguesas} />
         </section>
 
-        <section ref={sandwichRef}>
+        <section ref={refs.sandwich}>
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
           <ProductList addToCart={addToCart} products={productos.sandwich} />
         </section>
 
-        <section ref={papasRef}>
+        <section ref={refs.papas}>
           <h2 className="section-title mb-3 mt-5">Papas</h2>
           <ProductList addToCart={addToCart} products={productos.papas} />
         </section>
 
-    {/*     <section ref={bebidasRef}>
-          <h2 className="section-title mb-3 mt-5">Bebidas</h2>
-          <ProductList addToCart={addToCart} products={productos.bebidas} />
-        </section> */}
       </main>
 
       <MapModal show={showMap} onClose={() => setShowMap(false)} />

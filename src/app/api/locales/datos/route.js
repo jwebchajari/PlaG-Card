@@ -36,14 +36,16 @@ export async function PUT(req) {
 		const data = {
 			whatsapp: body.whatsapp ?? "",
 			direccion: body.direccion ?? "",
+			alias: body.alias ?? "", // 👈 NUEVO CAMPO PARA TRANSFERENCIAS
+
 			redes: {
 				instagram: body.redes?.instagram ?? "",
 				facebook: body.redes?.facebook ?? "",
 				twitter: body.redes?.twitter ?? "",
-			}
+			},
 		};
 
-		// Usamos UPDATE para no borrar futuras propiedades (horarios, banner, etc)
+		// UPDATE mantiene otros datos existentes (banner, horarios, etc)
 		await update(ref(db, `locales/${LOCAL}/datos`), data);
 
 		return Response.json({ ok: true });
