@@ -29,20 +29,23 @@ export default function HorariosModal({ show, onClose, horarios = {} }) {
                         }
 
                         return (
-                            <div key={dia} className={styles.row}>
-                                <strong className={styles.dia}>
+                            <div key={dia} className={styles.item}>
+                                <span className={styles.day}>
                                     {dia.charAt(0).toUpperCase() + dia.slice(1)}
-                                </strong>
+                                </span>
 
                                 {cerrado ? (
-                                    <span className={styles.cerrado}>Cerrado</span>
+                                    <span className={styles.closed}>
+                                        🔴 Cerrado
+                                    </span>
                                 ) : franjas.length === 0 ? (
-                                    <span className={styles.sinTurnos}>Sin horarios</span>
+                                    <span className={styles.noHours}>Sin horarios</span>
                                 ) : (
-                                    <div className={styles.turnos}>
+                                    <div className={styles.hours}>
+                                        <span className={styles.openLabel}>🟢 Abierto</span>
                                         {franjas.map((f, i) => (
-                                            <span key={i}>
-                                                {f.inicio} - {f.fin}
+                                            <span key={i} className={styles.chip}>
+                                                {f.desde || f.inicio} – {f.hasta || f.fin}
                                             </span>
                                         ))}
                                     </div>
@@ -51,6 +54,10 @@ export default function HorariosModal({ show, onClose, horarios = {} }) {
                         );
                     })}
                 </div>
+
+                <button className={styles.closeBtn} onClick={onClose}>
+                    Cerrar
+                </button>
             </Modal.Body>
         </Modal>
     );

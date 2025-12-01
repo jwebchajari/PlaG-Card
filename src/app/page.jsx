@@ -147,7 +147,7 @@ export default function Home() {
         if (Date.now() - timestamp < 3 * 60 * 60 * 1000) {
           setCartItems(items);
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -225,15 +225,33 @@ export default function Home() {
         {/* HERO */}
         <div className={styles.heroCard}>
           <div className={styles.hoursBlock}>
-            <h2 className={styles.heroTitle}>
-              {new Date().toLocaleDateString("es-AR", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </h2>
 
-            <p className={styles.hoursText}>{estadoLocal.mensaje}</p>
+
+            <div className={styles.hoursBlock}>
+              <h2 className={styles.heroTitle}>
+                {new Date().toLocaleDateString("es-AR", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </h2>
+
+              <div className={styles.heroStatus}>
+                <span
+                  className={
+                    estadoLocal.abierto
+                      ? styles.statusOpen
+                      : styles.statusClosed
+                  }
+                >
+                  {estadoLocal.abierto
+                    ? "🟢 Abierto ahora"
+                    : `🔴 ${estadoLocal.mensaje}`}
+                </span>
+              </div>
+
+            </div>
+
           </div>
 
           <button

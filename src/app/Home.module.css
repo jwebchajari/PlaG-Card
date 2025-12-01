@@ -68,3 +68,29 @@
   border-color: var(--color-primary);
   color: var(--color-primary-dark);
 }
+
+
+.heroStatus {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statusOpen {
+  color: #2e7d32;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.statusClosed {
+  color: #d32f2f;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.statusDetail {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
+}

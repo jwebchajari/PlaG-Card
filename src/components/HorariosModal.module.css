@@ -1,59 +1,56 @@
-.overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    z-index: 2000;
-}
-
-.modal {
-    width: 100%;
-    max-width: 420px;
-    background: #fff;
-    border-radius: 16px;
-    padding: 22px;
-    animation: fadeIn 0.25s ease-out;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-
-.fadeIn {
-    animation: fadeIn 0.25s ease-out;
-}
-
-.title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
 .list {
-    margin: 0;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
 }
 
 .item {
     display: flex;
     justify-content: space-between;
-    padding: 10px 4px;
+    align-items: flex-start;
+    padding-bottom: 12px;
     border-bottom: 1px solid #eee;
-    font-size: 1rem;
 }
 
 .day {
     font-weight: 600;
-    color: #333;
-}
-
-.time {
-    font-weight: 500;
+    font-size: 1.05rem;
+    color: #222;
 }
 
 .closed {
     color: #e53935;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.noHours {
+    color: #777;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+.hours {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+}
+
+.openLabel {
+    color: #2e7d32;
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+
+.chip {
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
+    color: #2e7d32;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
@@ -72,49 +69,4 @@
 
 .closeBtn:hover {
     background: #333;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.dia {
-    font-weight: bold;
-}
-
-.cerrado {
-    color: red;
-    font-weight: bold;
-}
-
-.sinTurnos {
-    color: #777;
-    font-style: italic;
-}
-
-.turnos {
-    display: flex;
-    flex-direction: column;
-    text-align: right;
-    font-weight: 500;
 }
