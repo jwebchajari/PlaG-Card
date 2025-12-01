@@ -35,7 +35,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#facc15",
+  themeColor: "#101336",
 };
 
 import { Poppins } from "next/font/google";
@@ -54,7 +54,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body className={poppins.className}>
-        {/* Inicializador PWA - ahora sí funciona */}
         <PWAInitializer />
 
         {children}
