@@ -3,15 +3,18 @@ import { ref, update, remove, get } from "firebase/database";
 
 const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
 
-// GET => obtener 1 comida
+// -------------------------------------------------------------
+// GET → Obtener UNA comida
+// -------------------------------------------------------------
 export async function GET(req, { params }) {
 	try {
 		const snap = await get(
 			ref(db, `locales/${LOCAL}/comidas/${params.id}`)
 		);
+
 		return Response.json(snap.val() || {});
 	} catch (error) {
-		console.error("GET /api/comidas/[id] ERROR:", error);
+		console.error("GET /api/locales/comidas/[id] ERROR:", error);
 		return Response.json(
 			{ error: "Error al obtener comida" },
 			{ status: 500 }
@@ -19,7 +22,9 @@ export async function GET(req, { params }) {
 	}
 }
 
-// PUT => actualizar comida
+// -------------------------------------------------------------
+// PUT → Actualizar comida
+// -------------------------------------------------------------
 export async function PUT(req, { params }) {
 	try {
 		const body = await req.json();
@@ -34,11 +39,14 @@ export async function PUT(req, { params }) {
 			imagen: body.imagen ?? "",
 		};
 
-		await update(ref(db, `locales/${LOCAL}/comidas/${params.id}`), data);
+		await update(
+			ref(db, `locales/${LOCAL}/comidas/${params.id}`),
+			data
+		);
 
 		return Response.json({ ok: true });
 	} catch (error) {
-		console.error("PUT /api/comidas/[id] ERROR:", error);
+		console.error("PUT /api/locales/comidas/[id] ERROR:", error);
 		return Response.json(
 			{ error: "No se pudo actualizar" },
 			{ status: 500 }
@@ -46,13 +54,18 @@ export async function PUT(req, { params }) {
 	}
 }
 
-// DELETE => eliminar comida
+// -------------------------------------------------------------
+// DELETE → Eliminar comida
+// -------------------------------------------------------------
 export async function DELETE(req, { params }) {
 	try {
 		await remove(ref(db, `locales/${LOCAL}/comidas/${params.id}`));
 		return Response.json({ ok: true });
 	} catch (error) {
-		console.error("DELETE /api/comidas/[id] ERROR:", error);
-		return Response.json({ error: "No se pudo eliminar" }, { status: 500 });
+		console.error("DELETE /api/locales/comidas/[id] ERROR:", error);
+		return Response.json(
+			{ error: "No se pudo eliminar" },
+			{ status: 500 }
+		);
 	}
 }
