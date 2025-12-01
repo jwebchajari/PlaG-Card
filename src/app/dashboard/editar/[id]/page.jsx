@@ -11,11 +11,11 @@ export default function EditarComida({ params }) {
     useEffect(() => {
         async function fetchData() {
             try {
-                const res = await fetch(`/api/locales/${id}`);
+                const res = await fetch(`/api/locales/comidas/${id}`);
 
                 if (!res.ok) {
                     const text = await res.text();
-                    console.error("Error GET /api/locales/[id]:", res.status, text);
+                    console.error("Error GET /api/locales/comidas/[id]:", res.status, text);
                     return;
                 }
 
@@ -27,7 +27,6 @@ export default function EditarComida({ params }) {
                 setLoading(false);
             }
         }
-
         fetchData();
     }, [id]);
 
@@ -44,7 +43,7 @@ export default function EditarComida({ params }) {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const res = await fetch(`/api/locales/${id}`, {
+        const res = await fetch(`/api/locales/comidas/${id}`, {
             method: "PUT",
             body: JSON.stringify(form),
         });
@@ -61,7 +60,7 @@ export default function EditarComida({ params }) {
     async function handleDelete() {
         if (!confirm("¿Eliminar esta comida?")) return;
 
-        const res = await fetch(`/api/locales/${id}`, {
+        const res = await fetch(`/api/locales/comidas/${id}`, {
             method: "DELETE",
         });
 
@@ -147,6 +146,20 @@ export default function EditarComida({ params }) {
                     }}
                 >
                     Guardar cambios
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleDelete}
+                    style={{
+                        background: "red",
+                        color: "white",
+                        padding: "10px",
+                        borderRadius: "6px",
+                        marginTop: "10px",
+                    }}
+                >
+                    Eliminar comida
                 </button>
             </form>
         </div>

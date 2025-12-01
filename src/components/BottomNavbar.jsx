@@ -11,9 +11,9 @@ export default function BottomNavbar({
 }) {
 	const tabs = [
 		{ id: "hamburguesas", icon: "mdi:hamburger", label: "Burgers" },
-		{ id: "sandwich", icon: "mdi:food-croissant", label: "Sandwich" },
+		{ id: "sandwich", icon: "mdi:food-takeout-box", label: "Sandwich" },
 		{ id: "papas", icon: "mdi:french-fries", label: "Papas" },
-		{ id: "bebidas", icon: "mdi:cup-outline", label: "Bebidas" },
+		/* { id: "bebidas", icon: "mdi:cup-outline", label: "Bebidas" }, */
 	];
 
 	return (

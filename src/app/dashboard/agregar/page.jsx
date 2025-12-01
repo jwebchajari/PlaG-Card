@@ -33,7 +33,7 @@ export default function AgregarComida() {
     async function handleSubmit(e) {
         e.preventDefault();
 
-        const res = await fetch("/api", {
+        const res = await fetch("/api/locales/comidas", {
             method: "POST",
             body: JSON.stringify(form),
         });
@@ -42,7 +42,7 @@ export default function AgregarComida() {
             alert("Comida agregada");
             window.location.href = "/dashboard";
         } else {
-            alert("Error al agregar");
+            alert("Error al agregar comida");
         }
     }
 

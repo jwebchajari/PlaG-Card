@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 
 export default function DatosDelLocal() {
     const [form, setForm] = useState(null);
-    const [bannerPreview, setBannerPreview] = useState("/logo.png");
-    const [logoPreview, setLogoPreview] = useState("/logo.png");
 
     // Cargar datos desde Firebase
     useEffect(() => {
@@ -14,17 +12,14 @@ export default function DatosDelLocal() {
             const data = await res.json();
 
             setForm({
-                horarios: data.horarios || "",
-                ubicacion: data.ubicacion || "",
+                direccion: data.direccion || "",
                 whatsapp: data.whatsapp || "",
-                disponibleHoy: data.disponibleHoy || false,
-                banner: data.banner || "",
-                logo: data.logo || "",
-                tiempoEstimado: data.tiempoEstimado || 0,
+                redes: {
+                    instagram: data.redes?.instagram || "",
+                    facebook: data.redes?.facebook || "",
+                    twitter: data.redes?.twitter || "",
+                }
             });
-
-            setBannerPreview(data.banner && data.banner.trim() ? data.banner : "/logo.png");
-            setLogoPreview(data.logo && data.logo.trim() ? data.logo : "/logo.png");
         }
 
         load();
@@ -33,14 +28,20 @@ export default function DatosDelLocal() {
     if (!form) return <p style={{ padding: 20 }}>Cargando...</p>;
 
     function handleChange(e) {
-        const { name, value, type, checked } = e.target;
-        const newValue = type === "checkbox" ? checked : value;
+        const { name, value } = e.target;
 
-        const updated = { ...form, [name]: newValue };
-        setForm(updated);
+        // Campos de redes
+        if (name.startsWith("redes.")) {
+            const key = name.split(".")[1];
+            setForm((prev) => ({
+                ...prev,
+                redes: { ...prev.redes, [key]: value }
+            }));
+            return;
+        }
 
-        if (name === "banner") setBannerPreview(value.trim() ? value : "/logo.png");
-        if (name === "logo") setLogoPreview(value.trim() ? value : "/logo.png");
+        // Campos normales
+        setForm({ ...form, [name]: value });
     }
 
     async function handleSubmit(e) {
@@ -57,36 +58,7 @@ export default function DatosDelLocal() {
 
     return (
         <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
-
             <h1 style={{ marginBottom: 20 }}>Datos del Local</h1>
-
-            {/* PREVIEW BANNER */}
-            <img
-                src={bannerPreview}
-                alt="banner"
-                style={{
-                    width: "100%",
-                    height: 160,
-                    objectFit: "cover",
-                    borderRadius: 8,
-                    marginBottom: 20,
-                }}
-            />
-
-            {/* PREVIEW LOGO */}
-            <img
-                src={logoPreview}
-                alt="logo"
-                style={{
-                    width: 120,
-                    height: 120,
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                    margin: "0 auto 20px",
-                    display: "block",
-                    border: "2px solid #ddd",
-                }}
-            />
 
             <form
                 onSubmit={handleSubmit}
@@ -96,35 +68,15 @@ export default function DatosDelLocal() {
                     gap: 16,
                 }}
             >
+                {/* Dirección */}
                 <input
-                    name="banner"
-                    value={form.banner}
+                    name="direccion"
+                    value={form.direccion}
                     onChange={handleChange}
-                    placeholder="URL del banner"
+                    placeholder="Dirección del local"
                 />
 
-                <input
-                    name="logo"
-                    value={form.logo}
-                    onChange={handleChange}
-                    placeholder="URL del logo"
-                />
-
-                <textarea
-                    name="horarios"
-                    value={form.horarios}
-                    onChange={handleChange}
-                    placeholder="Horarios de atención"
-                    rows={3}
-                />
-
-                <input
-                    name="ubicacion"
-                    value={form.ubicacion}
-                    onChange={handleChange}
-                    placeholder="Ubicación del local"
-                />
-
+                {/* WhatsApp */}
                 <input
                     name="whatsapp"
                     value={form.whatsapp}
@@ -132,22 +84,26 @@ export default function DatosDelLocal() {
                     placeholder="WhatsApp"
                 />
 
-                <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <input
-                        type="checkbox"
-                        name="disponibleHoy"
-                        checked={form.disponibleHoy}
-                        onChange={handleChange}
-                    />
-                    ¿Hoy NO trabajamos?
-                </label>
+                {/* Redes sociales */}
+                <input
+                    name="redes.instagram"
+                    value={form.redes.instagram}
+                    onChange={handleChange}
+                    placeholder="Instagram"
+                />
 
                 <input
-                    name="tiempoEstimado"
-                    type="number"
-                    value={form.tiempoEstimado}
+                    name="redes.facebook"
+                    value={form.redes.facebook}
                     onChange={handleChange}
-                    placeholder="Tiempo estimado de preparación (minutos)"
+                    placeholder="Facebook"
+                />
+
+                <input
+                    name="redes.twitter"
+                    value={form.redes.twitter}
+                    onChange={handleChange}
+                    placeholder="Twitter"
                 />
 
                 <button

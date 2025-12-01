@@ -13,12 +13,14 @@ export default function Dashboard() {
     useEffect(() => {
         async function load() {
             try {
-                const res = await fetch("/api/locales");
+                const res = await fetch("/api/locales/comidas");
+
                 if (!res.ok) {
                     const text = await res.text();
-                    console.error("Error GET /api/locales:", res.status, text);
+                    console.error("Error GET /api/locales/comidas:", res.status, text);
                     return;
                 }
+
                 const data = await res.json();
                 setComidas(data || {});
             } catch (err) {
@@ -36,13 +38,13 @@ export default function Dashboard() {
         if (!confirm("¿Seguro que querés borrar esta comida?")) return;
 
         try {
-            const res = await fetch(`/api/locales/${id}`, {
+            const res = await fetch(`/api/locales/comidas/${id}`, {
                 method: "DELETE",
             });
 
             if (!res.ok) {
                 const text = await res.text();
-                console.error("Error DELETE /api/locales/[id]:", res.status, text);
+                console.error("Error DELETE /api/locales/comidas/[id]:", res.status, text);
                 alert("Error al borrar la comida");
                 return;
             }
@@ -53,6 +55,7 @@ export default function Dashboard() {
                 delete nuevo[id];
                 return nuevo;
             });
+
         } catch (err) {
             console.error("Error de red al borrar comida:", err);
             alert("Error al borrar la comida");
@@ -93,7 +96,7 @@ export default function Dashboard() {
                     const imageSrc =
                         item.imagen && item.imagen.trim() !== ""
                             ? item.imagen
-                            : "/logo.png"; // fallback
+                            : "/logo.png";
 
                     return (
                         <div
@@ -110,7 +113,6 @@ export default function Dashboard() {
                                 minHeight: "100%",
                             }}
                         >
-                            {/* Imagen */}
                             <img
                                 src={imageSrc}
                                 alt={item.nombre}
@@ -123,10 +125,8 @@ export default function Dashboard() {
                                 }}
                             />
 
-                            {/* Título */}
                             <h2 style={{ margin: "0 0 5px 0" }}>{item.nombre}</h2>
 
-                            {/* Etiqueta oferta */}
                             {enOferta && (
                                 <span
                                     style={{
@@ -142,7 +142,6 @@ export default function Dashboard() {
                                 </span>
                             )}
 
-                            {/* Precios */}
                             <div style={{ marginTop: 8, marginBottom: 8 }}>
                                 {enOferta ? (
                                     <>
@@ -164,14 +163,12 @@ export default function Dashboard() {
                                 )}
                             </div>
 
-                            {/* Descripción */}
                             {item.descripcion && (
                                 <p style={{ fontSize: "14px", color: "#555" }}>
                                     {item.descripcion}
                                 </p>
                             )}
 
-                            {/* Botones */}
                             <div
                                 style={{
                                     marginTop: "10px",

@@ -291,10 +291,10 @@ export default function Home() {
           <ProductList addToCart={addToCart} products={productos.papas} />
         </section>
 
-        <section ref={bebidasRef}>
+    {/*     <section ref={bebidasRef}>
           <h2 className="section-title mb-3 mt-5">Bebidas</h2>
           <ProductList addToCart={addToCart} products={productos.bebidas} />
-        </section>
+        </section> */}
       </main>
 
       <MapModal show={showMap} onClose={() => setShowMap(false)} />
