@@ -1,12 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
-export default function IOSInstallPrompt() {
-    const [visible, setVisible] = useState(true);
-
-    if (!visible) return null;
-
+export default function AndroidInstallPrompt({ onInstall, onClose }) {
     return (
         <div
             style={{
@@ -17,23 +11,23 @@ export default function IOSInstallPrompt() {
                 width: "92%",
                 maxWidth: "420px",
                 zIndex: 999999,
-                animation: "iosSlideIn 0.35s ease-out",
+                animation: "androidSlideIn 0.35s ease-out",
+                fontFamily: "system-ui, sans-serif",
             }}
         >
             <div
                 style={{
                     background: "#ffffffee",
-                    backdropFilter: "blur(10px)",
-                    padding: "18px 20px 16px",
+                    backdropFilter: "blur(8px)",
+                    padding: "20px",
                     borderRadius: "18px",
                     boxShadow: "0 8px 28px rgba(0,0,0,0.25)",
                     position: "relative",
-                    fontFamily: "system-ui, sans-serif",
                 }}
             >
-                {/* BOTÓN CERRAR */}
+                {/* Botón cerrar */}
                 <button
-                    onClick={() => setVisible(false)}
+                    onClick={onClose}
                     style={{
                         position: "absolute",
                         top: "10px",
@@ -48,69 +42,64 @@ export default function IOSInstallPrompt() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "#555",
+                        color: "#444",
                     }}
                 >
                     ✕
                 </button>
 
-                {/* TÍTULO */}
                 <h3
                     style={{
                         fontSize: "17px",
-                        margin: "0 0 8px 0",
                         fontWeight: "700",
-                        color: "#111",
+                        margin: "0 0 10px",
                         textAlign: "center",
+                        color: "#111",
                     }}
                 >
-                    📲 Instalá Pintó La Gula
+                    📥 Instalá la app
                 </h3>
 
-                {/* TEXTO PRINCIPAL */}
                 <p
                     style={{
-                        margin: "0 0 12px",
                         fontSize: "14px",
                         textAlign: "center",
                         color: "#333",
-                        lineHeight: "1.45",
+                        margin: "0 0 14px",
                     }}
                 >
-                    Agregá la app a tu pantalla de inicio para usarla más rápido y sin internet.
+                    Añadí Pintó La Gula a tu pantalla de inicio para usarla más
+                    rápido y sin conexión.
                 </p>
 
-                {/* PASO A PASO */}
-                <div
+                {/* Botón Instalar */}
+                <button
+                    onClick={onInstall}
                     style={{
-                        background: "#f8f8f8",
-                        borderRadius: "12px",
+                        width: "100%",
+                        background: "#facc15",
                         padding: "12px",
-                        fontSize: "14px",
-                        color: "#222",
+                        borderRadius: "12px",
+                        border: "none",
+                        fontSize: "15px",
+                        fontWeight: "700",
+                        cursor: "pointer",
+                        color: "#000",
                     }}
                 >
-                    <p style={{ margin: "0 0 8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "18px" }}>🔼</span>
-                        Tocá el botón <b>Compartir</b> en Safari
-                    </p>
+                    Instalar ahora
+                </button>
 
-                    <p style={{ margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-                        <span style={{ fontSize: "20px" }}>➕</span>
-                        Seleccioná <b>“Agregar a inicio”</b>
-                    </p>
-                </div>
-
-                {/* BOTÓN SECUNDARIO */}
+                {/* Botón secundario */}
                 <button
-                    onClick={() => setVisible(false)}
+                    onClick={onClose}
                     style={{
-                        marginTop: "14px",
+                        marginTop: "10px",
                         width: "100%",
                         padding: "10px",
                         borderRadius: "10px",
                         border: "none",
-                        background: "#f1f1f1",
+                        background: "#f2f2f2",
                         fontSize: "14px",
                         fontWeight: "600",
                         cursor: "pointer",
@@ -118,24 +107,14 @@ export default function IOSInstallPrompt() {
                 >
                     Seguir usando la web
                 </button>
-
             </div>
 
-            {/* ANIMACIÓN */}
-            <style>
-                {`
-        @keyframes iosSlideIn {
-          from {
-            opacity: 0;
-            transform: translate(-50%, 18px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
-        `}
-            </style>
+            <style>{`
+                @keyframes androidSlideIn {
+                    from { opacity: 0; transform: translate(-50%, 20px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+            `}</style>
         </div>
     );
 }

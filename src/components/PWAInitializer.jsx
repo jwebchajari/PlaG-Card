@@ -2,77 +2,75 @@
 
 import { useEffect, useState } from "react";
 import IOSInstallPrompt from "./iOSInstallPrompt";
+import AndroidInstallPrompt from "./AndroidInstallPrompt";
 
 export default function PWAInitializer() {
     const [deferredPrompt, setDeferredPrompt] = useState(null);
-    const [showInstallButton, setShowInstallButton] = useState(false);
+    const [showAndroidPrompt, setShowAndroidPrompt] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
 
     useEffect(() => {
-        // Detectar instalación previa
-        const standaloneCheck =
+        // Detectar si ya está instalada
+        const standalone =
             window.matchMedia("(display-mode: standalone)").matches ||
             window.navigator.standalone === true;
-
-        setIsStandalone(standaloneCheck);
+        setIsStandalone(standalone);
 
         // Registrar SW
         if ("serviceWorker" in navigator) {
-            navigator.serviceWorker
-                .register("/sw.js")
-                .then(() => console.log("✔ SW registrado"))
-                .catch((e) => console.error("❌ Error SW", e));
+            navigator.serviceWorker.register("/sw.js").catch(() => {});
         }
 
         // Detectar iOS
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        const iOS =
-            /iphone|ipad|ipod/.test(userAgent) && !standaloneCheck;
-        setIsIOS(iOS);
+        const ua = navigator.userAgent.toLowerCase();
+        const isIOSDevice = /iphone|ipad|ipod/.test(ua);
+        setIsIOS(isIOSDevice && !standalone);
 
-        // Evento Android
+        // Android → beforeinstallprompt
         window.addEventListener("beforeinstallprompt", (e) => {
             e.preventDefault();
-            console.log("📌 beforeinstallprompt disparado");
             setDeferredPrompt(e);
-            setShowInstallButton(true);
+            setShowAndroidPrompt(true);
         });
     }, []);
 
-    const installPWA = async () => {
+    /* -------------------
+       Android: instalar
+    --------------------- */
+    const installAndroid = async () => {
         if (!deferredPrompt) return;
+
         deferredPrompt.prompt();
         const result = await deferredPrompt.userChoice;
-        console.log("➡ Resultado instalación:", result.outcome);
+        console.log("Instalación Android:", result);
+
+        setShowAndroidPrompt(false);
         setDeferredPrompt(null);
-        setShowInstallButton(false);
     };
 
-    // 🔥 iOS no usa prompt, usa banner propio
+    const closeAndroidPrompt = () => {
+        setShowAndroidPrompt(false);
+    };
+
+    /* -------------------
+       iOS → banner propio
+    --------------------- */
     if (isIOS && !isStandalone) {
         return <IOSInstallPrompt />;
     }
 
-    if (!showInstallButton || isIOS) return null;
+    /* -------------------
+       Android
+    --------------------- */
+    if (showAndroidPrompt && deferredPrompt) {
+        return (
+            <AndroidInstallPrompt
+                onInstall={installAndroid}
+                onClose={closeAndroidPrompt}
+            />
+        );
+    }
 
-    return (
-        <button
-            onClick={installPWA}
-            style={{
-                position: "fixed",
-                bottom: "20px",
-                right: "20px",
-                background: "#facc15",
-                padding: "12px 18px",
-                borderRadius: "14px",
-                fontWeight: "bold",
-                border: "none",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-                zIndex: 99999,
-            }}
-        >
-            📥 Instalar App
-        </button>
-    );
+    return null;
 }
