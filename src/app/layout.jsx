@@ -35,7 +35,7 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#101336",
+  themeColor: "#0B0E29",
 };
 
 import { Poppins } from "next/font/google";
