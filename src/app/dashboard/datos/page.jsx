@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingScreen from "@/components/Loading";
 import { useEffect, useState } from "react";
 
 export default function DatosDelLocal() {
@@ -26,7 +27,7 @@ export default function DatosDelLocal() {
         load();
     }, []);
 
-    if (!form) return <p style={{ padding: 20 }}>Cargando...</p>;
+    if (!form) return      <LoadingScreen />;
 
     function handleChange(e) {
         const { name, value } = e.target;

@@ -1,5 +1,6 @@
 "use client";
 
+import LoadingScreen from "@/components/Loading";
 import { useEffect, useState } from "react";
 
 const DIAS = [
@@ -36,7 +37,7 @@ export default function Horarios() {
         load();
     }, []);
 
-    if (!horarios) return <p style={{ padding: 20 }}>Cargando...</p>;
+    if (!horarios) return     <LoadingScreen />;
 
     function toggleCerrado(dia) {
         setHorarios({
