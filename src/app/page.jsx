@@ -279,12 +279,12 @@ export default function Home() {
         {/* PRODUCTOS */}
         <section ref={refs.hamburguesas}>
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList addToCart={addToCart} products={productos.hamburguesas}  extras={datosLocal.extras} />
+          <ProductList addToCart={addToCart} products={productos.hamburguesas} extras={datosLocal.extras} />
         </section>
 
         <section ref={refs.sandwich}>
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
-          <ProductList addToCart={addToCart} products={productos.sandwich}  extras={datosLocal.extras} />
+          <ProductList addToCart={addToCart} products={productos.sandwich} extras={datosLocal.extras} />
         </section>
 
         <section ref={refs.papas}>
@@ -308,6 +308,7 @@ export default function Home() {
         expanded={expanded}
         onExpandToggle={() => setExpanded((prev) => !prev)}
       />
+      <script src="/pwa.js" defer></script>
 
 
     </>

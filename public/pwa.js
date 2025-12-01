@@ -1,22 +1,19 @@
 let deferredPrompt;
 
-window.addEventListener("beforeinstallprompt", (e) => {
-	e.preventDefault();
-	deferredPrompt = e;
+window.addEventListener("beforeinstallprompt", (event) => {
+	event.preventDefault();
+	deferredPrompt = event;
 
-	const installBtn = document.getElementById("install-app-btn");
-	if (installBtn) installBtn.style.display = "block";
+	const btn = document.getElementById("installBtn");
+	if (btn) btn.style.display = "block";
 });
 
-export function installPWA() {
+window.installPWA = async function () {
 	if (!deferredPrompt) return;
-	deferredPrompt.prompt();
-}
 
-<button
-	id="pwa-install-btn"
-	onClick={() => installPWA()}
-	style={{ display: "none" }}
->
-	Agregar al inicio
-</button>;
+	deferredPrompt.prompt();
+	const result = await deferredPrompt.userChoice;
+	console.log(result);
+
+	deferredPrompt = null;
+};
