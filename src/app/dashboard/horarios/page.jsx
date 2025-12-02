@@ -18,11 +18,12 @@ export default function Horarios() {
     const [loading, setLoading] = useState(true);
 
     // ==========================
-    // FUNCIÓN PARA OBTENER HORARIOS
+    // FUNCIÓN PARA OBTENER HORARIOS (SIN CACHE)
     // ==========================
     async function load() {
         setLoading(true);
-        const res = await fetch("/api/locales/horarios");
+
+        const res = await fetch("/api/locales/horarios", { cache: "no-store" });
         const data = await res.json();
 
         const inicial = {};
@@ -45,17 +46,9 @@ export default function Horarios() {
 
     if (loading || !horarios) return <LoadingScreen />;
 
-    // GUARDA COMO SEGURIDAD: franjas siempre array
-    DIAS.forEach((dia) => {
-        if (!Array.isArray(horarios[dia].franjas)) {
-            horarios[dia].franjas = [];
-        }
-    });
-
     // ==========================
     // HANDLERS
     // ==========================
-
     function toggleCerrado(dia) {
         setHorarios((prev) => ({
             ...prev,
@@ -101,16 +94,20 @@ export default function Horarios() {
         }));
     }
 
+    // ==========================
+    // GUARDAR EN FIREBASE
+    // ==========================
     async function guardar() {
         const res = await fetch("/api/locales/horarios", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
+            cache: "no-store",
             body: JSON.stringify(horarios),
         });
 
         if (res.ok) {
             alert("Horarios guardados correctamente");
-            load(); // recarga después de guardar
+            load(); // recarga desde la BD (SIN CACHE)
         } else {
             alert("Error al guardar");
         }

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { db } from "@/lib/firebase";
 import { ref, get, set } from "firebase/database";
 
@@ -17,26 +19,12 @@ export async function PUT(req) {
     try {
         const body = await req.json();
 
-        if (!body || typeof body !== "object") {
-            return Response.json(
-                { error: "Body inválido" },
-                { status: 400 }
-            );
-        }
-
         const diasValidos = [
             "lunes", "martes", "miércoles",
             "jueves", "viernes", "sábado", "domingo"
         ];
 
         for (const dia of diasValidos) {
-            if (!body[dia]) {
-                return Response.json(
-                    { error: `Falta el día: ${dia}` },
-                    { status: 400 }
-                );
-            }
-
             body[dia].cerrado = Boolean(body[dia].cerrado);
             body[dia].franjas = Array.isArray(body[dia].franjas)
                 ? body[dia].franjas
