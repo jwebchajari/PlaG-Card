@@ -176,7 +176,7 @@ export default function Home() {
     hamburguesas: useRef(null),
     sandwich: useRef(null),
     papas: useRef(null),
-    bebidas: useRef(null),
+    otros: useRef(null),
   };
 
   const firstScroll = useRef(true);
