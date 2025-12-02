@@ -3,10 +3,9 @@ import { ref, get, update } from "firebase/database";
 
 const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
 
-/* ===========================================================
-   GET → Obtener datos generales del local
-   Ruta: /api/locales/datos
-=========================================================== */
+/* ============================================
+   GET → Obtener datos del local
+============================================ */
 export async function GET() {
     try {
         const snapshot = await get(ref(db, `locales/${LOCAL}/datos`));
@@ -18,32 +17,25 @@ export async function GET() {
         return Response.json(snapshot.val());
     } catch (error) {
         console.error("GET /api/locales/datos ERROR:", error);
-        return Response.json(
-            { error: "No se pudieron obtener los datos" },
-            { status: 500 }
-        );
+        return Response.json({ error: "Error al obtener datos" }, { status: 500 });
     }
 }
 
-/* ===========================================================
-   PUT → Actualizar datos del local
-   Ruta: /api/locales/datos
-=========================================================== */
+/* ============================================
+   PUT → Guardar datos del local
+============================================ */
 export async function PUT(req) {
     try {
-        const body = await req.json();
+        const body = await req.json(); // ❗ AHORA FUNCIONA porque enviamos headers
 
         const data = {
             whatsapp: body.whatsapp ?? "",
             direccion: body.direccion ?? "",
             alias: body.alias ?? "",
-
-            // ⭐ NUEVOS CAMPOS CONFIGURABLES
             extras: {
                 carne: body.extras?.carne ?? 1500,
                 panEspecial: body.extras?.panEspecial ?? 500,
             },
-
             redes: {
                 instagram: body.redes?.instagram ?? "",
                 facebook: body.redes?.facebook ?? "",
@@ -56,9 +48,6 @@ export async function PUT(req) {
         return Response.json({ ok: true });
     } catch (error) {
         console.error("PUT /api/locales/datos ERROR:", error);
-        return Response.json(
-            { error: "Error al actualizar los datos" },
-            { status: 500 }
-        );
+        return Response.json({ error: "Error al guardar datos" }, { status: 500 });
     }
 }

@@ -71,6 +71,9 @@ export default function DatosDelLocal() {
 
         const res = await fetch("/api/locales/datos", {
             method: "PUT",
+            headers: {
+                "Content-Type": "application/json",   // ← 🔥 NECESARIO
+            },
             body: JSON.stringify(form),
         });
 
@@ -101,7 +104,6 @@ export default function DatosDelLocal() {
                     name="direccion"
                     value={form.direccion}
                     onChange={handleChange}
-                    placeholder="Ej: Av. Siempre Viva 742"
                 />
 
                 {/* WhatsApp */}
@@ -110,72 +112,63 @@ export default function DatosDelLocal() {
                     name="whatsapp"
                     value={form.whatsapp}
                     onChange={handleChange}
-                    placeholder="Ej: 5491122334455"
                 />
 
                 {/* Alias */}
-                <label style={{ fontWeight: 600 }}>Alias o CBU (transferencias)</label>
+                <label style={{ fontWeight: 600 }}>Alias o CBU</label>
                 <input
                     name="alias"
                     value={form.alias}
                     onChange={handleChange}
-                    placeholder="Ej: panaderia.lagula.mp"
                 />
 
                 <hr style={{ margin: "20px 0", opacity: 0.3 }} />
 
-                {/* ============ NUEVO ============ */}
-                <h3 style={{ margin: "0 0 10px 0" }}>Extras del menú</h3>
+                {/* Extras */}
+                <h3>Extras del menú</h3>
 
-                <label>Precio por carne extra (₲)</label>
+                <label>Carne extra (₲)</label>
                 <input
                     type="number"
                     name="extras.carne"
                     value={form.extras.carne}
                     onChange={handleChange}
                     min={0}
-                    placeholder="Ej: 1500"
                 />
 
-                <label>Precio por pan especial (₲)</label>
+                <label>Pan especial (₲)</label>
                 <input
                     type="number"
                     name="extras.panEspecial"
                     value={form.extras.panEspecial}
                     onChange={handleChange}
                     min={0}
-                    placeholder="Ej: 500"
                 />
 
                 <hr style={{ margin: "20px 0", opacity: 0.3 }} />
 
-                <h3 style={{ margin: "0 0 10px 0" }}>Redes sociales</h3>
+                {/* Redes */}
+                <h3>Redes sociales</h3>
 
-                {/* Instagram */}
                 <label>Instagram</label>
                 <input
                     name="redes.instagram"
                     value={form.redes.instagram}
                     onChange={handleChange}
-                    placeholder="@username"
                 />
 
-                {/* Facebook */}
                 <label>Facebook</label>
                 <input
                     name="redes.facebook"
                     value={form.redes.facebook}
                     onChange={handleChange}
-                    placeholder="Página o perfil"
                 />
 
-                {/* Twitter */}
                 <label>Twitter / X</label>
                 <input
                     name="redes.twitter"
                     value={form.redes.twitter}
                     onChange={handleChange}
-                    placeholder="@usuario"
                 />
 
                 <button
