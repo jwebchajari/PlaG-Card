@@ -15,88 +15,102 @@ const DIAS = [
 
 export default function Horarios() {
     const [horarios, setHorarios] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Cargar horarios desde Firebase
+    // ==========================
+    // FUNCIÓN PARA OBTENER HORARIOS
+    // ==========================
+    async function load() {
+        setLoading(true);
+        const res = await fetch("/api/locales/horarios");
+        const data = await res.json();
+
+        const inicial = {};
+        DIAS.forEach((dia) => {
+            const diaData = data[dia] || {};
+
+            inicial[dia] = {
+                cerrado: diaData.cerrado ?? false,
+                franjas: Array.isArray(diaData.franjas) ? diaData.franjas : [],
+            };
+        });
+
+        setHorarios(inicial);
+        setLoading(false);
+    }
+
     useEffect(() => {
-        async function load() {
-            const res = await fetch("/api/locales/horarios");
-            const data = await res.json();
-
-            // Si no existen horarios, los inicializamos
-            const inicial = {};
-            DIAS.forEach((dia) => {
-                inicial[dia] = data[dia] || {
-                    cerrado: false,
-                    franjas: [],
-                };
-            });
-
-            setHorarios(inicial);
-        }
-
         load();
     }, []);
 
-    if (!horarios) return     <LoadingScreen />;
+    if (loading || !horarios) return <LoadingScreen />;
+
+    // GUARDA COMO SEGURIDAD: franjas siempre array
+    DIAS.forEach((dia) => {
+        if (!Array.isArray(horarios[dia].franjas)) {
+            horarios[dia].franjas = [];
+        }
+    });
+
+    // ==========================
+    // HANDLERS
+    // ==========================
 
     function toggleCerrado(dia) {
-        setHorarios({
-            ...horarios,
+        setHorarios((prev) => ({
+            ...prev,
             [dia]: {
-                ...horarios[dia],
-                cerrado: !horarios[dia].cerrado,
+                ...prev[dia],
+                cerrado: !prev[dia].cerrado,
             },
-        });
+        }));
     }
 
     function cambiarFranja(dia, index, campo, valor) {
-        const nuevasFranjas = [...horarios[dia].franjas];
-        nuevasFranjas[index][campo] = valor;
+        setHorarios((prev) => {
+            const nuevasFranjas = [...prev[dia].franjas];
+            nuevasFranjas[index][campo] = valor;
 
-        setHorarios({
-            ...horarios,
-            [dia]: {
-                ...horarios[dia],
-                franjas: nuevasFranjas,
-            },
+            return {
+                ...prev,
+                [dia]: { ...prev[dia], franjas: nuevasFranjas },
+            };
         });
     }
 
     function agregarFranja(dia) {
-        const nuevasFranjas = [
-            ...horarios[dia].franjas,
-            { desde: "08:00", hasta: "12:00" },
-        ];
-
-        setHorarios({
-            ...horarios,
+        setHorarios((prev) => ({
+            ...prev,
             [dia]: {
-                ...horarios[dia],
-                franjas: nuevasFranjas,
+                ...prev[dia],
+                franjas: [
+                    ...prev[dia].franjas,
+                    { desde: "08:00", hasta: "12:00" },
+                ],
             },
-        });
+        }));
     }
 
     function eliminarFranja(dia, index) {
-        const nuevasFranjas = horarios[dia].franjas.filter((_, i) => i !== index);
-
-        setHorarios({
-            ...horarios,
+        setHorarios((prev) => ({
+            ...prev,
             [dia]: {
-                ...horarios[dia],
-                franjas: nuevasFranjas,
+                ...prev[dia],
+                franjas: prev[dia].franjas.filter((_, i) => i !== index),
             },
-        });
+        }));
     }
 
     async function guardar() {
         const res = await fetch("/api/locales/horarios", {
             method: "PUT",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(horarios),
         });
 
         if (res.ok) {
             alert("Horarios guardados correctamente");
+            load(); // recarga después de guardar
         } else {
             alert("Error al guardar");
         }
@@ -118,7 +132,6 @@ export default function Horarios() {
                 >
                     <h2 style={{ textTransform: "capitalize" }}>{dia}</h2>
 
-                    {/* Cerrar día */}
                     <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <input
                             type="checkbox"
@@ -130,7 +143,6 @@ export default function Horarios() {
 
                     {!horarios[dia].cerrado && (
                         <>
-                            {/* Lista de franjas */}
                             {horarios[dia].franjas.map((f, index) => (
                                 <div
                                     key={index}
@@ -171,7 +183,6 @@ export default function Horarios() {
                                 </div>
                             ))}
 
-                            {/* Botón agregar franja */}
                             <button
                                 onClick={() => agregarFranja(dia)}
                                 style={{

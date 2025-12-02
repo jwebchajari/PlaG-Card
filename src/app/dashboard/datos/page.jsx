@@ -5,35 +5,45 @@ import { useEffect, useState } from "react";
 
 export default function DatosDelLocal() {
     const [form, setForm] = useState(null);
+    const [loadingData, setLoadingData] = useState(true);
 
-    // Cargar datos desde API
+    // ==========================
+    // FUNCIÓN PARA CARGAR LOS DATOS DEL GET
+    // ==========================
+    async function loadData() {
+        setLoadingData(true);
+
+        const res = await fetch("/api/locales/datos");
+        const data = await res.json();
+
+        setForm({
+            direccion: data.direccion || "",
+            whatsapp: data.whatsapp || "",
+            alias: data.alias || "",
+
+            extras: {
+                carne: data.extras?.carne || 1500,
+                panEspecial: data.extras?.panEspecial || 500,
+            },
+
+            redes: {
+                instagram: data.redes?.instagram || "",
+                facebook: data.redes?.facebook || "",
+                twitter: data.redes?.twitter || "",
+            },
+        });
+
+        setLoadingData(false);
+    }
+
+    // Cargar datos al iniciar
     useEffect(() => {
-        async function load() {
-            const res = await fetch("/api/locales/datos");
-            const data = await res.json();
-
-            setForm({
-                direccion: data.direccion || "",
-                whatsapp: data.whatsapp || "",
-                alias: data.alias || "",
-
-                extras: {
-                    carne: data.extras?.carne || 1500,
-                    panEspecial: data.extras?.panEspecial || 500,
-                },
-
-                redes: {
-                    instagram: data.redes?.instagram || "",
-                    facebook: data.redes?.facebook || "",
-                    twitter: data.redes?.twitter || "",
-                },
-            });
-        }
-
-        load();
+        loadData();
     }, []);
 
-    if (!form) return <LoadingScreen />;
+
+    if (!form || loadingData) return <LoadingScreen />;
+
 
     /* ==========================
        HANDLERS
@@ -62,24 +72,36 @@ export default function DatosDelLocal() {
             return;
         }
 
-        // Datos simples
+        // Otros campos
         setForm({ ...form, [name]: value });
     }
 
+
+    // ==========================
+    // HANDLE SUBMIT
+    // ==========================
     async function handleSubmit(e) {
         e.preventDefault();
 
         const res = await fetch("/api/locales/datos", {
             method: "PUT",
             headers: {
-                "Content-Type": "application/json",   // ← 🔥 NECESARIO
+                "Content-Type": "application/json",
             },
             body: JSON.stringify(form),
         });
 
-        if (res.ok) alert("Datos actualizados correctamente");
-        else alert("Error al guardar");
+        if (res.ok) {
+            alert("Datos actualizados correctamente");
+
+            // 🔥 RECARGAR DESDE LA BD PARA ACTUALIZAR LOS CAMPOS
+            await loadData();
+
+        } else {
+            alert("Error al guardar");
+        }
     }
+
 
     /* ==========================
        UI
@@ -91,13 +113,8 @@ export default function DatosDelLocal() {
 
             <form
                 onSubmit={handleSubmit}
-                style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 16,
-                }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
             >
-
                 {/* Dirección */}
                 <label style={{ fontWeight: 600 }}>Dirección del local</label>
                 <input
@@ -124,7 +141,6 @@ export default function DatosDelLocal() {
 
                 <hr style={{ margin: "20px 0", opacity: 0.3 }} />
 
-                {/* Extras */}
                 <h3>Extras del menú</h3>
 
                 <label>Carne extra (₲)</label>
@@ -133,7 +149,6 @@ export default function DatosDelLocal() {
                     name="extras.carne"
                     value={form.extras.carne}
                     onChange={handleChange}
-                    min={0}
                 />
 
                 <label>Pan especial (₲)</label>
@@ -142,12 +157,10 @@ export default function DatosDelLocal() {
                     name="extras.panEspecial"
                     value={form.extras.panEspecial}
                     onChange={handleChange}
-                    min={0}
                 />
 
                 <hr style={{ margin: "20px 0", opacity: 0.3 }} />
 
-                {/* Redes */}
                 <h3>Redes sociales</h3>
 
                 <label>Instagram</label>
