@@ -77,14 +77,14 @@ export default function AndroidInstallPrompt({ onInstall, onClose }) {
                     onClick={onInstall}
                     style={{
                         width: "100%",
-                        background: "#facc15",
+                        background: "#0B0E29",
                         padding: "12px",
                         borderRadius: "12px",
                         border: "none",
                         fontSize: "15px",
                         fontWeight: "700",
                         cursor: "pointer",
-                        color: "#000",
+                        color: "#FFF",
                     }}
                 >
                     Instalar ahora
