@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { db } from "@/lib/firebase";
 import { ref, get, update } from "firebase/database";
 

@@ -7,13 +7,13 @@ export default function DatosDelLocal() {
     const [form, setForm] = useState(null);
     const [loadingData, setLoadingData] = useState(true);
 
-    // ==========================
-    // FUNCIÓN PARA CARGAR LOS DATOS DEL GET
-    // ==========================
+    /* ==========================
+       FUNCIÓN: cargar datos del GET
+    ========================== */
     async function loadData() {
         setLoadingData(true);
 
-        const res = await fetch("/api/locales/datos");
+        const res = await fetch("/api/locales/datos", { cache: "no-store" });
         const data = await res.json();
 
         setForm({
@@ -41,14 +41,11 @@ export default function DatosDelLocal() {
         loadData();
     }, []);
 
-
     if (!form || loadingData) return <LoadingScreen />;
 
-
     /* ==========================
-       HANDLERS
+       HANDLER: handleChange
     ========================== */
-
     function handleChange(e) {
         const { name, value } = e.target;
 
@@ -57,7 +54,7 @@ export default function DatosDelLocal() {
             const key = name.split(".")[1];
             setForm((prev) => ({
                 ...prev,
-                redes: { ...prev.redes, [key]: value },
+                redes: { ...prev.redes, [key]: value }
             }));
             return;
         }
@@ -67,46 +64,39 @@ export default function DatosDelLocal() {
             const key = name.split(".")[1];
             setForm((prev) => ({
                 ...prev,
-                extras: { ...prev.extras, [key]: Number(value) },
+                extras: { ...prev.extras, [key]: Number(value) }
             }));
             return;
         }
 
-        // Otros campos
+        // Campos simples
         setForm({ ...form, [name]: value });
     }
 
-
-    // ==========================
-    // HANDLE SUBMIT
-    // ==========================
+    /* ==========================
+       SUBMIT: guardar cambios
+    ========================== */
     async function handleSubmit(e) {
         e.preventDefault();
 
         const res = await fetch("/api/locales/datos", {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store", // 🔥 NECESARIO EN VERCEL
             body: JSON.stringify(form),
         });
 
         if (res.ok) {
             alert("Datos actualizados correctamente");
-
-            // 🔥 RECARGAR DESDE LA BD PARA ACTUALIZAR LOS CAMPOS
-            await loadData();
-
+            await loadData(); // vuelve a cargar
         } else {
             alert("Error al guardar");
         }
     }
 
-
     /* ==========================
        UI
     ========================== */
-
     return (
         <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
             <h1 style={{ marginBottom: 20 }}>Datos del Local</h1>

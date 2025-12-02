@@ -13,6 +13,7 @@ import LoadingScreen from "@/components/Loading";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import styles from "./Home.module.css";
+import PWAInitializer from "@/components/PWAInitializer";
 
 // Configuracion de la barra de carga
 NProgress.configure({ showSpinner: false, speed: 450, trickleSpeed: 100 });
@@ -220,6 +221,7 @@ export default function Home() {
   /* ========================= RENDER ========================= */
   return (
     <>
+            <PWAInitializer />
       <AddToCartToast show={toastVisible} productName={toastProduct} />
       <TopNavbar
         totalItems={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
