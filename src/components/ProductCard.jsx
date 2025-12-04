@@ -13,20 +13,18 @@ export default function ProductCard({
     const precioOriginal = Number(product.valorOriginal || product.price);
     const precioOferta = Number(product.valorOferta || product.price);
 
-    // ====== ESTADOS ======
     const [meatCount, setMeatCount] = useState(1);
     const [breadType, setBreadType] = useState("comun");
+    const [showExtras, setShowExtras] = useState(false);
 
     const isBurgerOrSandwich =
         category === "hamburguesas" || category === "sandwich";
 
-    // ====== CÁLCULOS DINÁMICOS ======
     const extraMeatPrice = (meatCount - 1) * (extraCarne || 0);
     const extraBreadPrice = breadType !== "comun" ? extraPanEspecial || 0 : 0;
 
     const finalPrice = precioOferta + extraMeatPrice + extraBreadPrice;
 
-    // Añadir al carrito
     const handleAdd = () => {
         addToCart({
             ...product,
@@ -38,7 +36,6 @@ export default function ProductCard({
         });
     };
 
-    // Calcular descuento
     let descuento = 0;
     if (enOferta && precioOriginal > precioOferta) {
         descuento = Math.round(
@@ -90,52 +87,68 @@ export default function ProductCard({
                 </div>
             </div>
 
-            {/* ---------- OPCIONES EXTRA ---------- */}
+            {/* ---------- ACORDEÓN DE PERSONALIZACIÓN ---------- */}
             {isBurgerOrSandwich && (
-                <div className={styles.optionsBlock}>
-                    {/* CARNES */}
-                    <label className={styles.optionLabel}>Carne:</label>
-                    <div className={styles.optionRow}>
-                        <button
-                            className={styles.selectorBtn}
-                            onClick={() =>
-                                setMeatCount((m) => Math.max(1, m - 1))
-                            }
-                        >
-                            -
-                        </button>
-
-                        <span className={styles.qtyDisplay}>{meatCount}</span>
-
-                        <button
-                            className={styles.selectorBtn}
-                            onClick={() => setMeatCount((m) => m + 1)}
-                        >
-                            +
-                        </button>
-
-                        {meatCount > 1 && (
-                            <span className={styles.extraText}>
-                                +${extraMeatPrice}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* PAN */}
-                    <label className={styles.optionLabel}>Pan:</label>
-                    <select
-                        className={styles.select}
-                        value={breadType}
-                        onChange={(e) => setBreadType(e.target.value)}
+                <div className={styles.accordion}>
+                    <button
+                        className={styles.accordionToggle}
+                        onClick={() => setShowExtras((p) => !p)}
                     >
-                        <option value="comun">Común</option>
-                        <option value="papa">
-                            Pan de papa (+${extraPanEspecial})
-                        </option>
-                        <option value="parmesano">
-                            Parmesano (+${extraPanEspecial})
-                        </option>
-                    </select>
+                        {showExtras ? "▼ Personalización" : "► Personalizar pedido"}
+                    </button>
+
+                    {showExtras && (
+                        <div className={styles.optionsBlock}>
+                            {/* CARNES */}
+                            <label className={styles.optionLabel}>Carne:</label>
+                            <div className={styles.optionRow}>
+                                <button
+                                    className={styles.selectorBtn}
+                                    onClick={() =>
+                                        setMeatCount((m) => Math.max(1, m - 1))
+                                    }
+                                >
+                                    -
+                                </button>
+
+                                <span className={styles.qtyDisplay}>
+                                    {meatCount}
+                                </span>
+
+                                <button
+                                    className={styles.selectorBtn}
+                                    disabled={meatCount >= 5}
+                                    onClick={() =>
+                                        setMeatCount((m) => Math.min(5, m + 1))
+                                    }
+                                >
+                                    +
+                                </button>
+
+                                {meatCount > 1 && (
+                                    <span className={styles.extraText}>
+                                        +${extraMeatPrice}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* PAN */}
+                            <label className={styles.optionLabel}>Pan:</label>
+                            <select
+                                className={styles.select}
+                                value={breadType}
+                                onChange={(e) => setBreadType(e.target.value)}
+                            >
+                                <option value="comun">Común</option>
+                                <option value="papa">
+                                    Pan de papa (+${extraPanEspecial})
+                                </option>
+                                <option value="parmesano">
+                                    Parmesano (+${extraPanEspecial})
+                                </option>
+                            </select>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

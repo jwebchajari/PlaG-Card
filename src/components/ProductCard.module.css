@@ -196,3 +196,45 @@
     background: #fff;
     font-size: 0.9rem;
 }
+/* ========================================= */
+/* ACORDEÓN PERSONALIZAR PEDIDO              */
+/* ========================================= */
+
+.accordion {
+    padding: 0 12px 12px;
+    border-top: 1px solid var(--color-border-soft);
+    background: #fdfdfd;
+}
+
+.accordionToggle {
+    width: 100%;
+    background: #f1f1f1;
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-top: 10px;
+    text-align: left;
+    transition: background 0.2s ease;
+}
+
+.accordionToggle:hover {
+    background: #e4e4e4;
+}
+
+/* Reemplaza tu bloque .optionsBlock por este (mejor integrado con el acordeón) */
+.optionsBlock {
+    padding: 12px;
+    margin-top: 10px;
+    background: #fafafa;
+    border: 1px solid var(--color-border-soft);
+    border-radius: 10px;
+}
+
+/* Deshabilitado del botón (+) cuando llega a 5 carnes */
+.selectorBtn:disabled {
+    background: #e0e0e0;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
