@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
 import TopNavbar from "@/components/TopNavbar";
 import BottomNavbar from "@/components/BottomNavbar";
 import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import MapModal from "@/components/MapModal";
 import AddToCartToast from "@/components/AddToCartToast";
-import { calcularEstadoDelDia } from "@/utils/horarios";
+import { getEstadoLocal } from "@/utils/horarios";   // ⬅️ NUEVO
 import HorariosModal from "@/components/HorariosModal";
 import LoadingScreen from "@/components/Loading";
 import NProgress from "nprogress";
@@ -15,14 +15,13 @@ import "nprogress/nprogress.css";
 import styles from "./Home.module.css";
 import PWAInitializer from "@/components/PWAInitializer";
 
-// Configuracion de la barra de carga
 NProgress.configure({ showSpinner: false, speed: 450, trickleSpeed: 100 });
 
 export default function Home() {
-  /* ========================= ESTADOS ========================= */
   const [activeTab, setActiveTab] = useState("hamburguesas");
   const [expanded, setExpanded] = useState(false);
   const [showMap, setShowMap] = useState(false);
+
   const [toastVisible, setToastVisible] = useState(false);
   const [toastProduct, setToastProduct] = useState("");
 
@@ -35,7 +34,6 @@ export default function Home() {
   const [estadoLocal, setEstadoLocal] = useState(null);
 
   /* ========================= CARGAR DATOS ========================= */
-
   useEffect(() => {
     async function fetchAll() {
       try {
@@ -73,8 +71,7 @@ export default function Home() {
         };
 
         Object.entries(rawProductos || {}).forEach(([id, item]) => {
-          const catKey =
-            categoriasMap[item.categoria?.toLowerCase()] || "otros";
+          const catKey = categoriasMap[item.categoria?.toLowerCase()] || "otros";
 
           const basePrice =
             item.oferta && item.valorOferta
@@ -83,7 +80,7 @@ export default function Home() {
 
           agrupados[catKey].push({
             id,
-            category: catKey,   // ⬅️ NUEVO
+            category: catKey,
             name: item.nombre || "",
             description: item.descripcion || "",
             price: basePrice || 0,
@@ -93,10 +90,9 @@ export default function Home() {
             image: item.imagen || "/logo.png",
             quantity: 1,
             notes: "",
-            meatCount: 1,            // ⬅️ NUEVO
-            breadType: "comun",      // ⬅️ NUEVO
+            meatCount: 1,
+            breadType: "comun",
           });
-
         });
 
         setProductos(agrupados);
@@ -130,7 +126,12 @@ export default function Home() {
         });
 
         setHorarios(normalizados);
-        setEstadoLocal(calcularEstadoDelDia(normalizados));
+
+        // =======================
+        // NUEVA LÓGICA DEL HERO
+        // =======================
+        setEstadoLocal(getEstadoLocal(normalizados));
+
       } catch (err) {
         console.error("ERROR cargando datos:", err);
       } finally {
@@ -152,7 +153,7 @@ export default function Home() {
         if (Date.now() - timestamp < 3 * 60 * 60 * 1000) {
           setCartItems(items);
         }
-      } catch { }
+      } catch {}
     }
   }, []);
 
@@ -221,41 +222,36 @@ export default function Home() {
   /* ========================= RENDER ========================= */
   return (
     <>
-            <PWAInitializer />
+      <PWAInitializer />
       <AddToCartToast show={toastVisible} productName={toastProduct} />
       <TopNavbar
         totalItems={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
       />
 
       <main className="container mb-5 pb-5" style={{ paddingTop: "72px" }}>
+        
         {/* HERO */}
         <div className={styles.heroCard}>
           <div className={styles.hoursBlock}>
 
+            <h2 className={styles.heroTitle}>
+              {new Date().toLocaleDateString("es-AR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </h2>
 
-            <div className={styles.hoursBlock}>
-              <h2 className={styles.heroTitle}>
-                {new Date().toLocaleDateString("es-AR", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </h2>
-
-              <div className={styles.heroStatus}>
-                <span
-                  className={
-                    estadoLocal.abierto
-                      ? styles.statusOpen
-                      : styles.statusClosed
-                  }
-                >
-                  {estadoLocal.abierto
-                    ? "🟢 Abierto ahora"
-                    : `🔴 ${estadoLocal.mensaje}`}
+            <div className={styles.heroStatus}>
+              {estadoLocal.abierto ? (
+                <span className={styles.statusOpen}>
+                  🟢 Abierto ahora — {estadoLocal.mensaje}
                 </span>
-              </div>
-
+              ) : (
+                <span className={styles.statusClosed}>
+                  🔴 Cerrado — {estadoLocal.mensaje}
+                </span>
+              )}
             </div>
 
           </div>
@@ -272,6 +268,7 @@ export default function Home() {
           </button>
         </div>
 
+        {/* MODAL HORARIOS */}
         <HorariosModal
           show={showHorarios}
           onClose={() => setShowHorarios(false)}
@@ -281,12 +278,20 @@ export default function Home() {
         {/* PRODUCTOS */}
         <section ref={refs.hamburguesas}>
           <h2 className="section-title mb-3">Hamburguesas</h2>
-          <ProductList addToCart={addToCart} products={productos.hamburguesas} extras={datosLocal.extras} />
+          <ProductList
+            addToCart={addToCart}
+            products={productos.hamburguesas}
+            extras={datosLocal.extras}
+          />
         </section>
 
         <section ref={refs.sandwich}>
           <h2 className="section-title mb-3 mt-5">Sandwiches</h2>
-          <ProductList addToCart={addToCart} products={productos.sandwich} extras={datosLocal.extras} />
+          <ProductList
+            addToCart={addToCart}
+            products={productos.sandwich}
+            extras={datosLocal.extras}
+          />
         </section>
 
         <section ref={refs.papas}>
@@ -310,9 +315,8 @@ export default function Home() {
         expanded={expanded}
         onExpandToggle={() => setExpanded((prev) => !prev)}
       />
+
       <script src="/pwa.js" defer></script>
-
-
     </>
   );
 }
