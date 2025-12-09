@@ -7,10 +7,13 @@ export default function CartModal({
 	show,
 	onClose,
 	cartItems,
+	setCartItems,
 	updateCartItemNotes,
 	updateCartItemQuantity,
 	removeCartItem,
-	totalPrice
+	totalPrice,
+	extrasCarne = 1250,
+	extrasPanEspecial = 750
 }) {
 	const [nombre, setNombre] = useState("");
 	const [metodo, setMetodo] = useState("retiro");
@@ -21,21 +24,53 @@ export default function CartModal({
 
 	const telefono = "5493412275598";
 
-	/* ============================================================
-	   MOSTRAR ERROR ELEGANTE (NO alert())
-	=============================================================== */
+	/* =======================
+	   Mostrar error elegante
+	======================= */
 	const showError = (msg) => {
 		setErrorMsg(msg);
 		setTimeout(() => setErrorMsg(""), 2500);
 	};
 
-	/* ============================================================
-	   ENVIAR WHATSAPP
-	=============================================================== */
-	const sendWhatsappOrder = () => {
-		// Validaciones bonitas
-		if (!nombre.trim()) return showError("Por favor ingresá tu nombre.");
+	/* =======================
+	   Update Carnes
+	======================= */
+	const updateCartItemMeat = (id, newCount) => {
+		setCartItems((prev) =>
+			prev.map((item) =>
+				item.id === id
+					? {
+							...item,
+							meatCount: Math.max(1, newCount),
+							extraMeatPrice: Math.max(0, newCount - 1) * extrasCarne
+					  }
+					: item
+			)
+		);
+	};
 
+	/* =======================
+	   Update Pan
+	======================= */
+	const updateCartItemBread = (id, breadType) => {
+		setCartItems((prev) =>
+			prev.map((item) =>
+				item.id === id
+					? {
+							...item,
+							breadType,
+							extraBreadPrice: breadType === "comun" ? 0 : extrasPanEspecial
+					  }
+					: item
+			)
+		);
+	};
+
+	/* =======================
+	   WhatsApp
+	======================= */
+	const sendWhatsappOrder = () => {
+		if (!nombre.trim()) return showError("Por favor ingresá tu nombre.");
 		if (metodo === "envio" && !direccion.trim())
 			return showError("Ingresá tu dirección para el envío.");
 
@@ -43,22 +78,44 @@ export default function CartModal({
 
 		let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
 		mensaje += `👤 *Cliente:* ${nombre}%0A`;
-		mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"}%0A`;
+		mensaje += `📦 *Método:* ${
+			metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"
+		}%0A`;
 
 		if (metodo === "envio") {
 			mensaje += `🏠 *Dirección:* ${direccion}%0A`;
-			if (obsEntrega.trim())
-				mensaje += `📌 *Observaciones:* ${obsEntrega}%0A`;
+			if (obsEntrega.trim()) mensaje += `📌 *Observaciones:* ${obsEntrega}%0A`;
 		}
 
 		mensaje += `%0A*Detalle del pedido:*%0A`;
-		cartItems.forEach(item => {
-			mensaje += `• ${item.quantity} x ${item.name} — $${(item.price * item.quantity).toFixed(2)}%0A`;
-			if (item.notes?.trim())
-				mensaje += `  📝 Nota: ${item.notes}%0A`;
+
+		cartItems.forEach((item) => {
+			const finalUnit =
+				item.price +
+				(item.categoria === "Hamburguesa" ? item.extraMeatPrice || 0 : 0) +
+				(item.extraBreadPrice || 0);
+
+			const subtotal = finalUnit * item.quantity;
+
+			mensaje += `• ${item.quantity} x ${item.name} — $${subtotal}%0A`;
+
+			if (item.categoria === "Hamburguesa") {
+				mensaje += `   🍖 Carnes: ${item.meatCount}%0A`;
+				mensaje += `   🍞 Pan: ${item.breadType}%0A`;
+			}
+
+			if (item.categoria === "Sandwich") {
+				mensaje += `   🍞 Pan: ${item.breadType}%0A`;
+			}
+
+			if (item.notes?.trim()) {
+				mensaje += `   📝 Nota: ${item.notes}%0A`;
+			}
+
+			mensaje += "%0A";
 		});
 
-		mensaje += `%0A💵 *Total:* $${totalPrice.toFixed(2)}%0A`;
+		mensaje += `💵 *Total:* $${totalPrice}%0A`;
 
 		const url = `https://wa.me/${telefono}?text=${mensaje}`;
 		window.open(url, "_blank");
@@ -66,7 +123,7 @@ export default function CartModal({
 		setTimeout(() => {
 			setSending(false);
 			onClose();
-		}, 800);
+		}, 700);
 	};
 
 	return (
@@ -76,7 +133,6 @@ export default function CartModal({
 			</Modal.Header>
 
 			<Modal.Body className={styles.body}>
-				{/* ALERTA ELEGANTE */}
 				{errorMsg && (
 					<Alert variant="danger" className="py-2">
 						{errorMsg}
@@ -92,55 +148,152 @@ export default function CartModal({
 					</div>
 				) : (
 					<>
-						{/* LISTA DE PRODUCTOS */}
+						{/* ======================
+							LISTA DE PRODUCTOS
+						====================== */}
 						<div className={styles.items}>
-							{cartItems.map(item => (
-								<div key={item.id} className={styles.item}>
-									<img src={item.image} className={styles.img} />
+							{cartItems.map((item) => {
+								const finalUnit =
+									item.price +
+									(item.categoria === "Hamburguesa"
+										? item.extraMeatPrice || 0
+										: 0) +
+									(item.extraBreadPrice || 0);
 
-									<div className="flex-grow-1">
-										<p className={styles.name}>{item.name}</p>
+								return (
+									<div key={item.id} className={styles.item}>
+										<img src={item.image} className={styles.img} />
 
-										<p className={styles.sub}>
-											${item.price} x {item.quantity} = $
-											{(item.price * item.quantity).toFixed(2)}
-										</p>
+										<div className="flex-grow-1">
+											<p className={styles.name}>{item.name}</p>
 
-										<div className="d-flex align-items-center gap-2">
-											<Button
-												size="sm"
-												variant="outline-secondary"
-												onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-												disabled={item.quantity <= 1}
-											>
-												-
-											</Button>
-											<span className="fw-bold">{item.quantity}</span>
-											<Button
-												size="sm"
-												variant="outline-secondary"
-												onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-											>
-												+
-											</Button>
+											<p className={styles.sub}>
+												${finalUnit} × {item.quantity} = $
+												{(finalUnit * item.quantity).toFixed(2)}
+											</p>
+
+											{/* === HAMBURGUESA === */}
+											{item.categoria === "Hamburguesa" && (
+												<>
+													{/* CARNES */}
+													<div className="mt-1 d-flex align-items-center gap-2">
+														<span>🍖 Carnes:</span>
+														<Button
+															size="sm"
+															variant="outline-secondary"
+															onClick={() =>
+																updateCartItemMeat(item.id, item.meatCount - 1)
+															}
+															disabled={item.meatCount <= 1}
+														>
+															-
+														</Button>
+														<span className="fw-bold">{item.meatCount}</span>
+														<Button
+															size="sm"
+															variant="outline-secondary"
+															onClick={() =>
+																updateCartItemMeat(item.id, item.meatCount + 1)
+															}
+														>
+															+
+														</Button>
+
+														{item.extraMeatPrice > 0 && (
+															<span className={styles.extraText}>
+																+${item.extraMeatPrice}
+															</span>
+														)}
+													</div>
+
+													{/* PAN */}
+													<div className="mt-1">
+														<span>🍞 Pan:</span>
+														<Form.Select
+															className="mt-1"
+															value={item.breadType}
+															onChange={(e) =>
+																updateCartItemBread(item.id, e.target.value)
+															}
+														>
+															<option value="comun">Común</option>
+															<option value="papa">
+																Pan de papa (+${extrasPanEspecial})
+															</option>
+															<option value="parmesano">
+																Parmesano (+${extrasPanEspecial})
+															</option>
+														</Form.Select>
+													</div>
+												</>
+											)}
+
+											{/* === SANDWICH === */}
+											{item.categoria === "Sandwich" && (
+												<div className="mt-1">
+													<span>🍞 Pan:</span>
+													<Form.Select
+														className="mt-1"
+														value={item.breadType}
+														onChange={(e) =>
+															updateCartItemBread(item.id, e.target.value)
+														}
+													>
+														<option value="comun">Común</option>
+														<option value="papa">
+															Pan de papa (+${extrasPanEspecial})
+														</option>
+														<option value="parmesano">
+															Parmesano (+${extrasPanEspecial})
+														</option>
+													</Form.Select>
+												</div>
+											)}
+
+											{/* === CANTIDAD === */}
+											<div className="d-flex align-items-center gap-2 mt-2">
+												<Button
+													size="sm"
+													variant="outline-secondary"
+													onClick={() =>
+														updateCartItemQuantity(item.id, item.quantity - 1)
+													}
+													disabled={item.quantity <= 1}
+												>
+													-
+												</Button>
+												<span className="fw-bold">{item.quantity}</span>
+												<Button
+													size="sm"
+													variant="outline-secondary"
+													onClick={() =>
+														updateCartItemQuantity(item.id, item.quantity + 1)
+													}
+												>
+													+
+												</Button>
+											</div>
+
+											{/* === NOTAS === */}
+											<Form.Control
+												className="mt-2"
+												placeholder="Notas (sin cebolla...)"
+												value={item.notes}
+												onChange={(e) =>
+													updateCartItemNotes(item.id, e.target.value)
+												}
+											/>
 										</div>
 
-										<Form.Control
-											className="mt-2"
-											placeholder="Notas (sin cebolla...)"
-											value={item.notes}
-											onChange={(e) => updateCartItemNotes(item.id, e.target.value)}
-										/>
+										<button
+											className={styles.delete}
+											onClick={() => removeCartItem(item.id)}
+										>
+											<Icon icon="lucide:trash" width={20} />
+										</button>
 									</div>
-
-									<button
-										className={styles.delete}
-										onClick={() => removeCartItem(item.id)}
-									>
-										<Icon icon="lucide:trash" width={20} />
-									</button>
-								</div>
-							))}
+								);
+							})}
 						</div>
 
 						<hr />
@@ -148,10 +301,10 @@ export default function CartModal({
 						{/* TOTAL */}
 						<div className={styles.totalRow}>
 							<h5>Total:</h5>
-							<h5>${totalPrice.toFixed(2)}</h5>
+							<h5>${totalPrice}</h5>
 						</div>
 
-						{/* DATOS DEL CLIENTE */}
+						{/* CLIENTE */}
 						<div className="mt-3">
 							<Form.Label>Tu nombre</Form.Label>
 							<Form.Control

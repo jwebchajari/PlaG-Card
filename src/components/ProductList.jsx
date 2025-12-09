@@ -26,8 +26,8 @@ export default function ProductList({ products, addToCart, extras }) {
                         category={product.category}
                         addToCart={addToCart}
                         onImageClick={setSelectedProduct}
-                        extraCarne={extras?.carne || 0}          // ⭐ desde Firebase
-                        extraPanEspecial={extras?.panEspecial || 0} // ⭐ desde Firebase
+                        extraCarne={extras?.carne || 0}
+                        extraPanEspecial={extras?.panEspecial || 0}
                     />
                 ))}
             </div>

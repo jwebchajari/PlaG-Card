@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatPrice } from "@/utils/format"; // ⭐ IMPORTANTE
 import styles from "./ProductCard.module.css";
 
 export default function ProductCard({
@@ -17,10 +18,11 @@ export default function ProductCard({
     const [breadType, setBreadType] = useState("comun");
     const [showExtras, setShowExtras] = useState(false);
 
-    const isBurgerOrSandwich =
-        category === "hamburguesas" || category === "sandwich";
+    // Lógica por categoría
+    const isBurger = category === "hamburguesas";
+    const isSandwich = category === "sandwich";
 
-    const extraMeatPrice = (meatCount - 1) * (extraCarne || 0);
+    const extraMeatPrice = isBurger ? (meatCount - 1) * (extraCarne || 0) : 0;
     const extraBreadPrice = breadType !== "comun" ? extraPanEspecial || 0 : 0;
 
     const finalPrice = precioOferta + extraMeatPrice + extraBreadPrice;
@@ -28,7 +30,7 @@ export default function ProductCard({
     const handleAdd = () => {
         addToCart({
             ...product,
-            meatCount,
+            meatCount: isBurger ? meatCount : 1,
             breadType,
             price: precioOferta,
             extraMeatPrice,
@@ -45,13 +47,12 @@ export default function ProductCard({
 
     return (
         <div className={styles.card}>
+
             {/* ---------- PARTE SUPERIOR ---------- */}
             <div className={styles.topRow}>
                 <div className={styles.imgWrapper}>
                     {enOferta && (
-                        <div className={styles.offerBadge}>
-                            🔥 {descuento}% OFF
-                        </div>
+                        <div className={styles.offerBadge}>🔥 {descuento}% OFF</div>
                     )}
 
                     <img
@@ -70,14 +71,16 @@ export default function ProductCard({
                         {enOferta ? (
                             <div className={styles.priceBox}>
                                 <span className={styles.oldPrice}>
-                                    ${precioOriginal}
+                                    ${formatPrice(precioOriginal)}
                                 </span>
                                 <span className={styles.offerPrice}>
-                                    ${finalPrice}
+                                    ${formatPrice(finalPrice)}
                                 </span>
                             </div>
                         ) : (
-                            <span className={styles.price}>${finalPrice}</span>
+                            <span className={styles.price}>
+                                ${formatPrice(finalPrice)}
+                            </span>
                         )}
 
                         <button className={styles.addBtn} onClick={handleAdd}>
@@ -87,8 +90,8 @@ export default function ProductCard({
                 </div>
             </div>
 
-            {/* ---------- ACORDEÓN DE PERSONALIZACIÓN ---------- */}
-            {isBurgerOrSandwich && (
+            {/* ---------- PERSONALIZACIÓN ---------- */}
+            {(isBurger || isSandwich) && (
                 <div className={styles.accordion}>
                     <button
                         className={styles.accordionToggle}
@@ -99,41 +102,41 @@ export default function ProductCard({
 
                     {showExtras && (
                         <div className={styles.optionsBlock}>
-                            {/* CARNES */}
-                            <label className={styles.optionLabel}>Carne:</label>
-                            <div className={styles.optionRow}>
-                                <button
-                                    className={styles.selectorBtn}
-                                    onClick={() =>
-                                        setMeatCount((m) => Math.max(1, m - 1))
-                                    }
-                                >
-                                    -
-                                </button>
 
-                                <span className={styles.qtyDisplay}>
-                                    {meatCount}
-                                </span>
+                            {/* SOLO HAMBURGUESA: CARNES */}
+                            {isBurger && (
+                                <>
+                                    <label className={styles.optionLabel}>🍖 Carne:</label>
 
-                                <button
-                                    className={styles.selectorBtn}
-                                    disabled={meatCount >= 5}
-                                    onClick={() =>
-                                        setMeatCount((m) => Math.min(5, m + 1))
-                                    }
-                                >
-                                    +
-                                </button>
+                                    <div className={styles.optionRow}>
+                                        <button
+                                            className={styles.selectorBtn}
+                                            onClick={() => setMeatCount(m => Math.max(1, m - 1))}
+                                        >
+                                            -
+                                        </button>
 
-                                {meatCount > 1 && (
-                                    <span className={styles.extraText}>
-                                        +${extraMeatPrice}
-                                    </span>
-                                )}
-                            </div>
+                                        <span className={styles.qtyDisplay}>{meatCount}</span>
 
-                            {/* PAN */}
-                            <label className={styles.optionLabel}>Pan:</label>
+                                        <button
+                                            className={styles.selectorBtn}
+                                            disabled={meatCount >= 5}
+                                            onClick={() => setMeatCount(m => Math.min(5, m + 1))}
+                                        >
+                                            +
+                                        </button>
+
+                                        {meatCount > 1 && (
+                                            <span className={styles.extraText}>
+                                                +${formatPrice(extraMeatPrice)}
+                                            </span>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
+                            {/* PAN PARA HAMBURGUESA Y SANDWICH */}
+                            <label className={styles.optionLabel}>🍞 Pan:</label>
                             <select
                                 className={styles.select}
                                 value={breadType}
@@ -141,12 +144,13 @@ export default function ProductCard({
                             >
                                 <option value="comun">Común</option>
                                 <option value="papa">
-                                    Pan de papa (+${extraPanEspecial})
+                                    Pan de papa (+${formatPrice(extraPanEspecial)})
                                 </option>
                                 <option value="parmesano">
-                                    Parmesano (+${extraPanEspecial})
+                                    Parmesano (+${formatPrice(extraPanEspecial)})
                                 </option>
                             </select>
+
                         </div>
                     )}
                 </div>
