@@ -38,6 +38,7 @@ export default function ComprarPage() {
 
   const [sending, setSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [errors, setErrors] = useState({}); // ⬅ errores por campo
 
   const [openSection, setOpenSection] = useState({});
 
@@ -125,10 +126,11 @@ export default function ComprarPage() {
       prev.map((item) =>
         item.id === id
           ? {
-            ...item,
-            meatCount: Math.max(1, Math.min(5, newCount)), // MAX 5
-            extraMeatPrice: Math.max(0, Math.min(5, newCount) - 1) * extraCarne,
-          }
+              ...item,
+              meatCount: Math.max(1, Math.min(5, newCount)), // MAX 5
+              extraMeatPrice:
+                Math.max(0, Math.min(5, newCount) - 1) * extraCarne,
+            }
           : item
       )
     );
@@ -139,10 +141,11 @@ export default function ComprarPage() {
       prev.map((item) =>
         item.id === id
           ? {
-            ...item,
-            breadType,
-            extraBreadPrice: breadType === "comun" ? 0 : extraPanEspecial,
-          }
+              ...item,
+              breadType,
+              extraBreadPrice:
+                breadType === "comun" ? 0 : extraPanEspecial,
+            }
           : item
       )
     );
@@ -206,17 +209,24 @@ export default function ComprarPage() {
   /* ====================== Enviar WhatsApp ====================== */
 
   const sendWhatsappOrder = useCallback(() => {
-    const br = "%0A";
+    const newErrors = {};
 
-    if (!nombre.trim()) {
-      setErrorMsg("Debés escribir tu nombre.");
-      scrollToRef(nombreRef);
-      return;
-    }
+    // Validaciones
+    if (!nombre.trim()) newErrors.nombre = "Debés escribir tu nombre.";
+    if (metodo === "envio" && !direccion.trim())
+      newErrors.direccion = "Debés ingresar una dirección.";
+    // Si quisieras validar método de pago solo si no tiene default:
+    // if (!metodoPago) newErrors.metodoPago = "Debés elegir un método de pago.";
 
-    if (metodo === "envio" && !direccion.trim()) {
-      setErrorMsg("Debés ingresar una dirección.");
-      scrollToRef(direccionRef);
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrorMsg("Faltan completar algunos datos obligatorios.");
+
+      if (newErrors.nombre) scrollToRef(nombreRef);
+      else if (newErrors.direccion) scrollToRef(direccionRef);
+      else if (newErrors.metodoPago) scrollToRef(metodoPagoRef);
+
       return;
     }
 
@@ -233,6 +243,8 @@ export default function ComprarPage() {
 
     setSending(true);
 
+    const br = "%0A";
+
     let msg = `🛎️ *Nuevo pedido desde Pintó La Gula* ${br}${br}`;
     msg += `👤 *Cliente:* ${nombre}${br}`;
     msg += `🚚 *Entrega:* ${metodo}${br}`;
@@ -244,7 +256,6 @@ export default function ComprarPage() {
     }
 
     msg += `${br}🛒 *Pedido:*${br}`;
-
     cartItems.forEach((item) => (msg += buildItemMessage(item)));
 
     msg += `💵 *TOTAL:* $${formatPrice(totalPrice)}${br}${br}`;
@@ -316,11 +327,11 @@ export default function ComprarPage() {
         toggleSection={toggleSection}
       />
 
-
       {/* TOTAL */}
       <TotalRow total={totalPrice} formatPrice={formatPrice} />
 
-      {/* FORMULARIO */}
+      {/* FORMULARIO (con refs para scroll) */}
+      <div ref={nombreRef}></div>
       <BuyerForm
         nombre={nombre}
         setNombre={setNombre}
@@ -333,9 +344,12 @@ export default function ComprarPage() {
         metodoPago={metodoPago}
         setMetodoPago={setMetodoPago}
         localAlias={localAlias}
+        errors={errors}
       />
+      <div ref={direccionRef}></div>
+      <div ref={metodoPagoRef}></div>
 
-      {/* BOTÓN WHATSAPP */}
+      {/* BOTONES */}
       <div className={styles.actionRow}>
         <WhatsappButton
           sendWhatsappOrder={sendWhatsappOrder}

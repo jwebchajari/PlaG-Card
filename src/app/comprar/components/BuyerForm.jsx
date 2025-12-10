@@ -13,19 +13,26 @@ export default function BuyerForm({
     setObsEntrega,
     metodoPago,
     setMetodoPago,
-    localAlias
+    localAlias,
+    errors // ⬅ Recibimos errores del padre
 }) {
     return (
         <div className={styles.buyerFormBox}>
 
-            <h5 className={styles.buyerFormTitle}> Tus datos</h5>
+            <h5 className={styles.buyerFormTitle}>Tus datos</h5>
 
+            {/* ============= NOMBRE ============= */}
+            {errors?.nombre && (
+                <div className="text-danger mb-1 fw-semibold">{errors.nombre}</div>
+            )}
             <Form.Label className="mt-2 fw-bold">Tu nombre</Form.Label>
             <Form.Control
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
+                isInvalid={!!errors?.nombre}
             />
 
+            {/* ============= MÉTODO DE ENTREGA ============= */}
             <Form.Label className="mt-3 fw-bold">Método de entrega</Form.Label>
             <div className={styles.radioRow}>
                 <Form.Check
@@ -42,12 +49,18 @@ export default function BuyerForm({
                 />
             </div>
 
+            {/* ============= DIRECCIÓN (solo si envío) ============= */}
             {metodo === "envio" && (
                 <>
+                    {errors?.direccion && (
+                        <div className="text-danger mb-1 fw-semibold">{errors.direccion}</div>
+                    )}
+
                     <Form.Label className="mt-3 fw-bold">Dirección</Form.Label>
                     <Form.Control
                         value={direccion}
                         onChange={(e) => setDireccion(e.target.value)}
+                        isInvalid={!!errors?.direccion}
                     />
 
                     <Form.Label className="mt-3 fw-bold">Observaciones</Form.Label>
@@ -56,6 +69,11 @@ export default function BuyerForm({
                         onChange={(e) => setObsEntrega(e.target.value)}
                     />
                 </>
+            )}
+
+            {/* ============= MÉTODO DE PAGO ============= */}
+            {errors?.metodoPago && (
+                <div className="text-danger mb-1 fw-semibold">{errors.metodoPago}</div>
             )}
 
             <Form.Label className="mt-3 fw-bold">Método de pago</Form.Label>
@@ -74,6 +92,7 @@ export default function BuyerForm({
                 />
             </div>
 
+            {/* ============= ALIAS SI ES TRANSFERENCIA ============= */}
             {metodoPago === "transferencia" && localAlias && (
                 <div className={styles.aliasBox}>
                     <p className={styles.aliasLabel}>Alias para transferir</p>
