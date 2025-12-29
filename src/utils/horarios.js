@@ -1,6 +1,14 @@
 // =====================
 // NORMALIZACIÓN DE HORARIOS
 // =====================
+
+function normalizarDia(dia) {
+	return dia
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "");
+}
+
 function parseHora(hora) {
 	if (!hora) return null;
 	const [h, m] = hora.split(":").map(Number);
@@ -8,100 +16,100 @@ function parseHora(hora) {
 }
 
 export function getEstadoLocal(horarios) {
-	const dias = [
+	const diasOrden = [
 		"domingo",
 		"lunes",
 		"martes",
-		"miércoles",
+		"miercoles",
 		"jueves",
 		"viernes",
-		"sábado",
+		"sabado",
 	];
 
-	const now = new Date();
-	const diaActual = dias[now.getDay()];
-	const horaActual = now.getHours();
-	const minutoActual = now.getMinutes();
-	const minutosAhora = horaActual * 60 + minutoActual;
-
-	const infoDia = horarios[diaActual] || {};
-	const cerrado = Boolean(infoDia.cerrado);
-
-	let franjas = [];
-	if (Array.isArray(infoDia.franjas)) franjas = infoDia.franjas;
-	else if (infoDia.franjas) franjas = Object.values(infoDia.franjas);
-
-	const franjasNorm = franjas.map((f) => {
-		const inicio = f.inicio || f.desde;
-		const fin = f.fin || f.hasta;
-
-		return {
-			inicio,
-			fin,
-			inicioMin: parseHora(inicio),
-			finMin: parseHora(fin),
-		};
+	const horariosNorm = {};
+	Object.entries(horarios || {}).forEach(([dia, data]) => {
+		horariosNorm[normalizarDia(dia)] = data;
 	});
 
+	const now = new Date();
+	const minutosAhora = now.getHours() * 60 + now.getMinutes();
+	const hoy = diasOrden[now.getDay()];
+
+	const infoHoy = horariosNorm[hoy];
 	let abierto = false;
 	let cierraA = null;
-	let proximaApertura = null;
 
-	// Revisar las franjas del día
-	for (const fr of franjasNorm) {
-		if (fr.inicioMin <= minutosAhora && minutosAhora < fr.finMin) {
-			abierto = true;
-			cierraA = fr.fin;
-			break;
-		}
+	if (infoHoy && !infoHoy.cerrado) {
+		const franjas = Array.isArray(infoHoy.franjas)
+			? infoHoy.franjas
+			: Object.values(infoHoy.franjas || {});
 
-		if (fr.inicioMin > minutosAhora) {
-			if (!proximaApertura || fr.inicioMin < proximaApertura.inicioMin) {
-				proximaApertura = fr;
+		for (const f of franjas) {
+			const inicio = f.inicio || f.desde;
+			const fin = f.fin || f.hasta;
+
+			let inicioMin = parseHora(inicio);
+			let finMin = parseHora(fin);
+
+			if (inicioMin == null || finMin == null) continue;
+
+			// ⏰ cruza medianoche
+			if (finMin === 0) finMin = 1440;
+
+			if (inicioMin <= minutosAhora && minutosAhora < finMin) {
+				abierto = true;
+				cierraA = fin;
+				break;
 			}
 		}
 	}
 
-	// Si no abre más hoy → buscar mañana
-	if (!abierto && !proximaApertura) {
-		const idxHoy = now.getDay();
-		const idxManiana = (idxHoy + 1) % 7;
-		const diaManiana = dias[idxManiana];
+	if (abierto) {
+		return {
+			abierto: true,
+			mensaje: `Cerramos a ${cierraA}`,
+			cierraA,
+		};
+	}
 
-		const infoManiana = horarios[diaManiana] || {};
-		let frManiana = [];
+	// Buscar próxima apertura
+	for (let i = 0; i < 7; i++) {
+		const idx = (now.getDay() + i) % 7;
+		const diaKey = diasOrden[idx];
+		const infoDia = horariosNorm[diaKey];
 
-		if (Array.isArray(infoManiana.franjas)) frManiana = infoManiana.franjas;
-		else if (infoManiana.franjas)
-			frManiana = Object.values(infoManiana.franjas);
+		if (!infoDia || infoDia.cerrado) continue;
 
-		if (frManiana[0]) {
-			const inicio = frManiana[0].inicio || frManiana[0].desde;
-			proximaApertura = {
-				inicio,
-				inicioMin: parseHora(inicio) + 1440, // sumar 24h
-			};
+		const franjas = Array.isArray(infoDia.franjas)
+			? infoDia.franjas
+			: Object.values(infoDia.franjas || {});
+
+		for (const f of franjas) {
+			const inicio = f.inicio || f.desde;
+			const inicioMin = parseHora(inicio);
+			if (inicioMin == null) continue;
+
+			const minutosObjetivo = i === 0 ? inicioMin : i * 1440 + inicioMin;
+
+			const diff = minutosObjetivo - minutosAhora;
+
+			if (diff > 0) {
+				const h = Math.floor(diff / 60);
+				const m = diff % 60;
+
+				return {
+					abierto: false,
+					mensaje:
+						h > 0 ? `Abrimos en ${h}h ${m}m` : `Abrimos en ${m}m`,
+					cierraA: null,
+				};
+			}
 		}
 	}
 
-	let mensaje = "";
-
-	if (abierto) {
-		mensaje = `Cerramos a ${cierraA}`;
-		return { abierto: true, mensaje, cierraA };
-	}
-
-	if (proximaApertura) {
-		const minutosObjetivo = proximaApertura.inicioMin;
-		const diff = minutosObjetivo - minutosAhora;
-
-		const h = Math.floor(diff / 60);
-		const m = diff % 60;
-
-		mensaje = `Abrimos en ${h}h ${m}m`;
-	} else {
-		mensaje = "Cerrado por hoy";
-	}
-
-	return { abierto: false, mensaje, cierraA: null };
+	return {
+		abierto: false,
+		mensaje: "Cerrado por hoy",
+		cierraA: null,
+	};
 }
