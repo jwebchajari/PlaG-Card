@@ -23,7 +23,7 @@ export default function DatosDelLocal() {
 
             extras: {
                 carne: data.extras?.carne || 1500,
-                panEspecial: data.extras?.panEspecial || 500,
+                panEspecial: data.extras?.panEspecial || 0,
             },
 
             redes: {
