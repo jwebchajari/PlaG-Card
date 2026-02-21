@@ -28,7 +28,7 @@ export default function ComprarPage() {
   const [localAlias, setLocalAlias] = useState("");
 
   const [extraCarne, setExtraCarne] = useState(1500);
-  const [extraPanEspecial, setExtraPanEspecial] = useState(500);
+  const [extraPanEspecial, setExtraPanEspecial] = useState(0);
 
   const [nombre, setNombre] = useState("");
   const [metodo, setMetodo] = useState("retiro");
@@ -75,7 +75,7 @@ export default function ComprarPage() {
         setLocalAlias(data.alias || "");
 
         setExtraCarne(data.extras?.carne || 1500);
-        setExtraPanEspecial(data.extras?.panEspecial || 500);
+        setExtraPanEspecial(data.extras?.panEspecial || 0);
       } catch (e) {
         console.error("Error cargando datos del local:", e);
       }
@@ -126,11 +126,11 @@ export default function ComprarPage() {
       prev.map((item) =>
         item.id === id
           ? {
-              ...item,
-              meatCount: Math.max(1, Math.min(5, newCount)), // MAX 5
-              extraMeatPrice:
-                Math.max(0, Math.min(5, newCount) - 1) * extraCarne,
-            }
+            ...item,
+            meatCount: Math.max(1, Math.min(5, newCount)), // MAX 5
+            extraMeatPrice:
+              Math.max(0, Math.min(5, newCount) - 1) * extraCarne,
+          }
           : item
       )
     );
@@ -141,11 +141,11 @@ export default function ComprarPage() {
       prev.map((item) =>
         item.id === id
           ? {
-              ...item,
-              breadType,
-              extraBreadPrice:
-                breadType === "comun" ? 0 : extraPanEspecial,
-            }
+            ...item,
+            breadType,
+            extraBreadPrice:
+              breadType === "comun" ? 0 : extraPanEspecial,
+          }
           : item
       )
     );

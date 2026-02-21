@@ -13,7 +13,7 @@ export default function CartModal({
 	removeCartItem,
 	totalPrice,
 	extrasCarne = 1250,
-	extrasPanEspecial = 750
+	extrasPanEspecial = 750,
 }) {
 	const [nombre, setNombre] = useState("");
 	const [metodo, setMetodo] = useState("retiro");
@@ -40,10 +40,10 @@ export default function CartModal({
 			prev.map((item) =>
 				item.id === id
 					? {
-							...item,
-							meatCount: Math.max(1, newCount),
-							extraMeatPrice: Math.max(0, newCount - 1) * extrasCarne
-					  }
+						...item,
+						meatCount: Math.max(1, newCount),
+						extraMeatPrice: Math.max(0, newCount - 1) * extrasCarne,
+					}
 					: item
 			)
 		);
@@ -57,10 +57,10 @@ export default function CartModal({
 			prev.map((item) =>
 				item.id === id
 					? {
-							...item,
-							breadType,
-							extraBreadPrice: breadType === "comun" ? 0 : extrasPanEspecial
-					  }
+						...item,
+						breadType,
+						extraBreadPrice: breadType === "comun" ? 0 : extrasPanEspecial,
+					}
 					: item
 			)
 		);
@@ -78,9 +78,8 @@ export default function CartModal({
 
 		let mensaje = `*Nuevo pedido desde Pintó La Gula*%0A`;
 		mensaje += `👤 *Cliente:* ${nombre}%0A`;
-		mensaje += `📦 *Método:* ${
-			metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"
-		}%0A`;
+		mensaje += `📦 *Método:* ${metodo === "retiro" ? "Retiro en local" : "Envío a domicilio"
+			}%0A`;
 
 		if (metodo === "envio") {
 			mensaje += `🏠 *Dirección:* ${direccion}%0A`;
@@ -91,20 +90,20 @@ export default function CartModal({
 
 		cartItems.forEach((item) => {
 			const finalUnit =
-				item.price +
-				(item.categoria === "Hamburguesa" ? item.extraMeatPrice || 0 : 0) +
-				(item.extraBreadPrice || 0);
+				(Number(item.price) || 0) +
+				(Number(item.extraMeatPrice) || 0) +
+				(Number(item.extraBreadPrice) || 0);
 
-			const subtotal = finalUnit * item.quantity;
+			const subtotal = finalUnit * (Number(item.quantity) || 1);
 
 			mensaje += `• ${item.quantity} x ${item.name} — $${subtotal}%0A`;
 
-			if (item.categoria === "Hamburguesa") {
+			if (item.category === "hamburguesas") {
 				mensaje += `   🍖 Carnes: ${item.meatCount}%0A`;
 				mensaje += `   🍞 Pan: ${item.breadType}%0A`;
 			}
 
-			if (item.categoria === "Sandwich") {
+			if (item.category === "sandwich") {
 				mensaje += `   🍞 Pan: ${item.breadType}%0A`;
 			}
 
@@ -141,28 +140,27 @@ export default function CartModal({
 
 				{cartItems.length === 0 ? (
 					<div className={styles.empty}>
-						<Icon icon="lucide:shopping-bag" width={50} className="mb-3 text-muted" />
+						<Icon
+							icon="lucide:shopping-bag"
+							width={50}
+							className="mb-3 text-muted"
+						/>
 						<h5>Carrito vacío</h5>
 						<p className="text-muted">Agregá productos para continuar</p>
 						<Button onClick={onClose}>Volver</Button>
 					</div>
 				) : (
 					<>
-						{/* ======================
-							LISTA DE PRODUCTOS
-						====================== */}
 						<div className={styles.items}>
 							{cartItems.map((item) => {
 								const finalUnit =
-									item.price +
-									(item.categoria === "Hamburguesa"
-										? item.extraMeatPrice || 0
-										: 0) +
-									(item.extraBreadPrice || 0);
+									(Number(item.price) || 0) +
+									(Number(item.extraMeatPrice) || 0) +
+									(Number(item.extraBreadPrice) || 0);
 
 								return (
 									<div key={item.id} className={styles.item}>
-										<img src={item.image} className={styles.img} />
+										<img src={item.image} className={styles.img} alt={item.name} />
 
 										<div className="flex-grow-1">
 											<p className={styles.name}>{item.name}</p>
@@ -173,9 +171,8 @@ export default function CartModal({
 											</p>
 
 											{/* === HAMBURGUESA === */}
-											{item.categoria === "Hamburguesa" && (
+											{item.category === "hamburguesas" && (
 												<>
-													{/* CARNES */}
 													<div className="mt-1 d-flex align-items-center gap-2">
 														<span>🍖 Carnes:</span>
 														<Button
@@ -195,18 +192,18 @@ export default function CartModal({
 															onClick={() =>
 																updateCartItemMeat(item.id, item.meatCount + 1)
 															}
+															disabled={item.meatCount >= 5}
 														>
 															+
 														</Button>
 
-														{item.extraMeatPrice > 0 && (
+														{(item.extraMeatPrice || 0) > 0 && (
 															<span className={styles.extraText}>
 																+${item.extraMeatPrice}
 															</span>
 														)}
 													</div>
 
-													{/* PAN */}
 													<div className="mt-1">
 														<span>🍞 Pan:</span>
 														<Form.Select
@@ -229,7 +226,7 @@ export default function CartModal({
 											)}
 
 											{/* === SANDWICH === */}
-											{item.categoria === "Sandwich" && (
+											{item.category === "sandwich" && (
 												<div className="mt-1">
 													<span>🍞 Pan:</span>
 													<Form.Select
@@ -278,10 +275,8 @@ export default function CartModal({
 											<Form.Control
 												className="mt-2"
 												placeholder="Notas (sin cebolla...)"
-												value={item.notes}
-												onChange={(e) =>
-													updateCartItemNotes(item.id, e.target.value)
-												}
+												value={item.notes || ""}
+												onChange={(e) => updateCartItemNotes(item.id, e.target.value)}
 											/>
 										</div>
 
@@ -298,19 +293,14 @@ export default function CartModal({
 
 						<hr />
 
-						{/* TOTAL */}
 						<div className={styles.totalRow}>
 							<h5>Total:</h5>
 							<h5>${totalPrice}</h5>
 						</div>
 
-						{/* CLIENTE */}
 						<div className="mt-3">
 							<Form.Label>Tu nombre</Form.Label>
-							<Form.Control
-								value={nombre}
-								onChange={(e) => setNombre(e.target.value)}
-							/>
+							<Form.Control value={nombre} onChange={(e) => setNombre(e.target.value)} />
 
 							<Form.Label className="mt-3">Método de entrega</Form.Label>
 							<div className="d-flex gap-4">
@@ -354,11 +344,7 @@ export default function CartModal({
 						Seguir comprando
 					</Button>
 
-					<Button
-						className={styles.whatsappBtn}
-						onClick={sendWhatsappOrder}
-						disabled={sending}
-					>
+					<Button className={styles.whatsappBtn} onClick={sendWhatsappOrder} disabled={sending}>
 						{sending ? (
 							<>
 								<span className="spinner-border spinner-border-sm me-2" />

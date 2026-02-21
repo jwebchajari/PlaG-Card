@@ -7,7 +7,7 @@ import ExpandedMenu from "@/components/ExpandedMenu";
 import ProductList from "@/components/ProductList";
 import MapModal from "@/components/MapModal";
 import AddToCartToast from "@/components/AddToCartToast";
-import { getEstadoLocal } from "@/utils/horarios";   // ⬅️ NUEVO
+import { getEstadoLocal } from "@/utils/horarios";
 import HorariosModal from "@/components/HorariosModal";
 import LoadingScreen from "@/components/Loading";
 import NProgress from "nprogress";
@@ -79,7 +79,7 @@ export default function Home() {
               : Number(item.valor);
 
           agrupados[catKey].push({
-            id,
+            id, // id del producto (del menú)
             category: catKey,
             name: item.nombre || "",
             description: item.descripcion || "",
@@ -88,6 +88,8 @@ export default function Home() {
             valorOferta: item.valorOferta ? Number(item.valorOferta) : null,
             oferta: Boolean(item.oferta),
             image: item.imagen || "/logo.png",
+
+            // defaults
             quantity: 1,
             notes: "",
             meatCount: 1,
@@ -126,12 +128,7 @@ export default function Home() {
         });
 
         setHorarios(normalizados);
-
-        // =======================
-        // NUEVA LÓGICA DEL HERO
-        // =======================
         setEstadoLocal(getEstadoLocal(normalizados));
-
       } catch (err) {
         console.error("ERROR cargando datos:", err);
       } finally {
@@ -153,7 +150,7 @@ export default function Home() {
         if (Date.now() - timestamp < 3 * 60 * 60 * 1000) {
           setCartItems(items);
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -197,17 +194,44 @@ export default function Home() {
     }
   }, [activeTab]);
 
-  /* ========================= CARRITO ========================= */
+  /* ========================= HELPERS ========================= */
+  const makeLineId = () =>
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+  /* ========================= CARRITO (NO SUMA / NO AGRUPA) ========================= */
   const addToCart = (product) => {
-    setCartItems((prev) => {
-      const exist = prev.find((i) => i.id === product.id);
-      if (exist) {
-        return prev.map((i) =>
-          i.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
-        );
-      }
-      return [...prev, { ...product, quantity: 1, notes: "" }];
-    });
+    // product llega desde ProductCard con la personalización ya calculada
+
+    const lineItem = {
+      // ✅ ID ÚNICO POR LÍNEA (clave para que no se sumen)
+      id: makeLineId(),
+
+      // ✅ guardamos el id real del producto
+      productId: product.id,
+
+      // datos
+      name: product.name,
+      description: product.description,
+      image: product.image,
+      category: product.category, // "hamburguesas" | "sandwich" | ...
+
+      // precios
+      price: Number(product.price) || 0,
+      extraMeatPrice: Number(product.extraMeatPrice) || 0,
+      extraBreadPrice: Number(product.extraBreadPrice) || 0,
+
+      // personalización
+      meatCount: Number(product.meatCount) || 1,
+      breadType: product.breadType || "comun",
+
+      // carrito
+      quantity: 1,
+      notes: product.notes || "",
+    };
+
+    setCartItems((prev) => [...prev, lineItem]);
 
     setToastProduct(product.name);
     setToastVisible(true);
@@ -224,16 +248,15 @@ export default function Home() {
     <>
       <PWAInitializer />
       <AddToCartToast show={toastVisible} productName={toastProduct} />
+
       <TopNavbar
         totalItems={cartItems.reduce((acc, item) => acc + item.quantity, 0)}
       />
 
       <main className="container mb-5 pb-5" style={{ paddingTop: "72px" }}>
-        
         {/* HERO */}
         <div className={styles.heroCard}>
           <div className={styles.hoursBlock}>
-
             <h2 className={styles.heroTitle}>
               {new Date().toLocaleDateString("es-AR", {
                 weekday: "long",
@@ -253,7 +276,6 @@ export default function Home() {
                 </span>
               )}
             </div>
-
           </div>
 
           <button
@@ -303,7 +325,6 @@ export default function Home() {
           <h2 className="section-title mb-3 mt-5">Otros</h2>
           <ProductList addToCart={addToCart} products={productos.otros} />
         </section>
-
       </main>
 
       <MapModal show={showMap} onClose={() => setShowMap(false)} />
