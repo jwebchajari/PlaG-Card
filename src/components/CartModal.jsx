@@ -59,7 +59,7 @@ export default function CartModal({
 					? {
 						...item,
 						breadType,
-						extraBreadPrice: breadType === "comun" ? 0 : extrasPanEspecial,
+						extraBreadPrice: breadType === "Berly" ? 0 : extrasPanEspecial,
 					}
 					: item
 			)
@@ -213,7 +213,7 @@ export default function CartModal({
 																updateCartItemBread(item.id, e.target.value)
 															}
 														>
-															<option value="comun">Común</option>
+															<option value="Berly">Pan Berly</option>
 															<option value="papa">
 																Pan de papa (+${extrasPanEspecial})
 															</option>
@@ -236,7 +236,7 @@ export default function CartModal({
 															updateCartItemBread(item.id, e.target.value)
 														}
 													>
-														<option value="comun">Común</option>
+														<option value="Berly">Berly</option>
 														<option value="papa">
 															Pan de papa (+${extrasPanEspecial})
 														</option>

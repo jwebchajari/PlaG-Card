@@ -144,7 +144,7 @@ export default function ComprarPage() {
             ...item,
             breadType,
             extraBreadPrice:
-              breadType === "comun" ? 0 : extraPanEspecial,
+              breadType === "Berly" ? 0 : extraPanEspecial,
           }
           : item
       )

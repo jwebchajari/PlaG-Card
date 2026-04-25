@@ -93,7 +93,7 @@ export default function Home() {
             quantity: 1,
             notes: "",
             meatCount: 1,
-            breadType: "comun",
+            breadType: "Berly",
           });
         });
 
@@ -224,7 +224,7 @@ export default function Home() {
 
       // personalización
       meatCount: Number(product.meatCount) || 1,
-      breadType: product.breadType || "comun",
+      breadType: product.breadType || "Berly",
 
       // carrito
       quantity: 1,

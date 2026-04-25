@@ -15,7 +15,7 @@ export default function ProductCard({
     const precioOferta = Number(product.valorOferta || product.price);
 
     const [meatCount, setMeatCount] = useState(1);
-    const [breadType, setBreadType] = useState("comun");
+    const [breadType, setBreadType] = useState("Berly");
     const [showExtras, setShowExtras] = useState(false);
 
     // Lógica por categoría
@@ -23,7 +23,7 @@ export default function ProductCard({
     const isSandwich = category === "sandwich";
 
     const extraMeatPrice = isBurger ? (meatCount - 1) * (extraCarne || 0) : 0;
-    const extraBreadPrice = breadType !== "comun" ? extraPanEspecial || 0 : 0;
+    const extraBreadPrice = breadType !== "Berly" ? extraPanEspecial || 0 : 0;
 
     const finalPrice = precioOferta + extraMeatPrice + extraBreadPrice;
 
@@ -142,7 +142,7 @@ export default function ProductCard({
                                 value={breadType}
                                 onChange={(e) => setBreadType(e.target.value)}
                             >
-                                <option value="comun">Común</option>
+                                <option value="Berly">Pan Berly</option>
                                 <option value="papa">
                                     Pan de papa (+${formatPrice(extraPanEspecial)})
                                 </option>

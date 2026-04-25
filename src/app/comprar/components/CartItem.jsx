@@ -34,7 +34,7 @@ export default function CartItem({
       {/*   IMAGEN + TEXTO        */}
       {/* ======================= */}
       <div style={{ display: "flex", width: "100%", gap: "14px" }}>
-        
+
         {/* IMAGEN */}
         <img src={item.image} alt={item.name} className={styles.cardImg} />
 
@@ -159,7 +159,7 @@ export default function CartItem({
                 value={item.breadType}
                 onChange={(e) => updateItemBread(item.id, e.target.value)}
               >
-                <option value="comun">Común</option>
+                <option value="Berly">Berly</option>
                 <option value="papa">
                   Pan de papa (+${formatPrice(extraPanEspecial)})
                 </option>
