@@ -1,0 +1,211 @@
+.page {
+	display: grid;
+	place-items: center;
+	min-height: 100dvh;
+	padding: 24px 16px;
+	background: var(--navy-900);
+}
+
+.card {
+	display: grid;
+	gap: 16px;
+	width: 100%;
+	max-width: 400px;
+	padding: 28px 22px;
+	border-radius: var(--radius-l);
+	background: var(--surface);
+	box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.wordmark {
+	color: var(--orange-600);
+	font-size: 0.9375rem;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+}
+
+.title {
+	font-size: 1.625rem;
+	font-weight: 800;
+	letter-spacing: -0.02em;
+}
+
+.lead {
+	margin-top: -8px;
+	color: var(--ink-muted);
+	font-size: 0.9375rem;
+}
+
+.field {
+	display: grid;
+	gap: 6px;
+}
+
+.field label {
+	font-size: 0.9375rem;
+	font-weight: 700;
+}
+
+.input {
+	width: 100%;
+	min-height: 50px;
+	padding: 0 14px;
+	border: 1.5px solid var(--line);
+	border-radius: 14px;
+	background: var(--surface);
+	font-size: 1rem;
+}
+
+.input:focus {
+	outline: none;
+	border-color: var(--navy-900);
+	box-shadow: 0 0 0 3px rgba(244, 164, 78, 0.45);
+}
+
+.input[aria-invalid="true"] {
+	border-color: var(--closed);
+}
+
+.passwordWrap {
+	position: relative;
+}
+
+.passwordWrap .input {
+	padding-right: 52px;
+}
+
+.eye {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: 12px;
+	background: transparent;
+	color: var(--ink-muted);
+}
+
+.error,
+.info {
+	padding: 10px 12px;
+	border-radius: 12px;
+	font-size: 0.9375rem;
+	font-weight: 600;
+}
+
+.error {
+	background: var(--closed-bg);
+	color: var(--closed);
+}
+
+.info {
+	background: var(--open-bg);
+	color: var(--open);
+}
+
+.submit {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 52px;
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: var(--orange-500);
+	color: var(--navy-900);
+	font-size: 1rem;
+	font-weight: 700;
+	transition: background 160ms;
+}
+
+.submit:hover {
+	background: var(--orange-600);
+}
+
+.submit:disabled {
+	opacity: 0.75;
+	cursor: progress;
+}
+
+.linkBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 44px;
+	border: 0;
+	background: none;
+	color: var(--navy-700);
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 4px;
+}
+
+.localList {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.localItem {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	min-height: 60px;
+	padding: 8px 12px;
+	border: 1.5px solid var(--line);
+	border-radius: 14px;
+	color: var(--ink);
+	text-decoration: none;
+	transition: border-color 160ms, background 160ms;
+}
+
+.localItem:hover {
+	border-color: var(--navy-900);
+	background: var(--navy-50);
+}
+
+.localIcon {
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	background: var(--orange-100);
+	color: var(--navy-900);
+}
+
+.localName {
+	flex: 1;
+	font-weight: 700;
+}
+
+.spin {
+	animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.adminItem {
+	border-color: var(--navy-900);
+	background: var(--navy-900);
+	color: var(--ink-on-dark);
+}
+
+.adminItem:hover {
+	background: var(--navy-800);
+}
+
+.adminItem .localIcon {
+	background: rgba(255, 255, 255, 0.12);
+	color: var(--orange-500);
+}

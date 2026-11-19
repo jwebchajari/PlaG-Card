@@ -1,129 +1,137 @@
-/***************************************************
- * 🌟 GLOBAL THEME — WHITE + SPACE BLUE
- ***************************************************/
 :root {
-  /* ======== PALETA PRINCIPAL ======== */
+	/* Brand: space blue + bread orange */
+	--navy-950: #070a1f;
+	--navy-900: #0b0e29;
+	--navy-800: #101336;
+	--navy-700: #1d2257;
+	--navy-600: #2c3278;
+	--navy-200: #c9cbe0;
+	--navy-100: #e6e7f1;
+	--navy-50: #f3f4f9;
 
-  /* 👇 Todo el fondo ahora blanco puro */
-  --color-bg: #FFFFFF;
-  --color-bg-alt: #FFFFFF;
+	--orange-500: #f4a44e;
+	--orange-600: #e58d2c;
+	--orange-100: #fdebd6;
 
-  /* Azul espacial definido por vos */
-  --color-primary: #101336;
-  /* Azul espacial */
-  --color-primary-dark: #0B0E29;
-  /* Más oscuro */
+	--ink: #101336;
+	--ink-muted: #565b78;
+	--ink-on-dark: #ffffff;
+	--ink-on-dark-muted: #c3c6e0;
 
-  --color-secondary: #F4A44E;
-  /* Naranja pan */
-  --color-accent: #23C882;
-  /* WhatsApp verde  */
+	--surface: #ffffff;
+	--ground: #f3f4f9;
+	--line: #dfe1ec;
 
-  --color-text-main: #1A1D29;
-  /* Negro suave */
-  --color-text-muted: #6C758A;
-  /* Gris azulado */
+	--open: #157347;
+	--open-bg: #dff3e7;
+	--closed: #b42727;
+	--closed-bg: #fbe3e3;
+	--wa: #157347;
+	--wa-hover: #0f5c38;
 
-  --color-border-soft: rgba(0, 0, 0, 0.10);
+	--radius-s: 10px;
+	--radius-m: 16px;
+	--radius-l: 24px;
+	--radius-pill: 999px;
 
-  /* ======== TIPOGRAFÍA ======== */
-  --font-family-base: system-ui, Arial, sans-serif;
+	--shadow-1: 0 1px 2px rgba(11, 14, 41, 0.06), 0 2px 8px rgba(11, 14, 41, 0.06);
+	--shadow-2: 0 4px 12px rgba(11, 14, 41, 0.1), 0 12px 32px rgba(11, 14, 41, 0.12);
 
-  /* ======== UI ======== */
-  --radius-card: 18px;
-  --radius-pill: 999px;
+	--header-h: 60px;
+	--catnav-h: 56px;
+	--ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.06);
-  --shadow-hover: 0 6px 22px rgba(0, 0, 0, 0.10);
+	color-scheme: light;
 }
 
-/***************************************************
- * BASE
- ***************************************************/
-html,
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	scroll-padding-top: calc(var(--header-h) + var(--catnav-h) + 8px);
+}
+
 body {
-  background-color: var(--color-bg);
-  color: var(--color-text-main);
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-family-base);
+	margin: 0;
+	background: var(--ground);
+	color: var(--ink);
+	font-family: var(--font-poppins), system-ui, sans-serif;
+	font-size: 16px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	-webkit-tap-highlight-color: transparent;
 }
 
-/***************************************************
- * BOTONES BLANCOS
- ***************************************************/
-
-/* Botón principal → blanco */
-.btn-primary {
-  background: #FFFFFF !important;
-  color: var(--color-primary) !important;
-  border: 2px solid var(--color-primary) !important;
-  border-radius: var(--radius-pill);
-  box-shadow: var(--shadow-soft);
-  transition: 0.2s ease;
+h1,
+h2,
+h3,
+h4,
+p {
+	margin: 0;
 }
 
-.btn-primary:hover {
-  background: var(--color-primary) !important;
-  color: white !important;
+h1,
+h2,
+h3 {
+	line-height: 1.2;
+	text-wrap: balance;
 }
 
-/* Outline */
-.btn-outline-primary {
-  border: 2px solid var(--color-primary);
-  color: var(--color-primary);
-  border-radius: var(--radius-pill);
-  background: white;
+img {
+	display: block;
+	max-width: 100%;
 }
 
-.btn-outline-primary:hover {
-  background: var(--color-primary);
-  color: white;
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
 }
 
-/* Botón verde (WhatsApp) */
-.btn-success {
-  background: var(--color-accent) !important;
-  border: none !important;
-  color: white !important;
-  border-radius: var(--radius-pill);
+button {
+	cursor: pointer;
 }
 
-/***************************************************
- * CARDS / SURFACES
- ***************************************************/
-.card,
-.surface {
-  background: #FFFFFF;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--color-border-soft);
-  box-shadow: var(--shadow-soft);
+a {
+	color: inherit;
 }
 
-/***************************************************
- * FORM INPUTS
- ***************************************************/
-.form-control {
-  background: #FFFFFF;
-  border-radius: 12px;
-  border: 1px solid var(--color-border-soft);
+::selection {
+	background: var(--orange-500);
+	color: var(--navy-900);
 }
 
-.form-control:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(16, 19, 54, 0.25);
+:focus-visible {
+	outline: 3px solid var(--orange-500);
+	outline-offset: 2px;
+	border-radius: 6px;
 }
 
-/***************************************************
- * MODALES
- ***************************************************/
-.modal-content {
-  background: #FFFFFF;
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-hover);
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
 }
 
-.modal-header,
-.modal-footer {
-  border-color: var(--color-border-soft);
+html:has(dialog[open]) {
+	overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }

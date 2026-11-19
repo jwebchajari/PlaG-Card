@@ -1,0 +1,262 @@
+.page {
+	padding-bottom: 96px;
+}
+
+/* ---------- Bulk editor ---------- */
+
+.quick {
+	gap: 14px;
+	margin-bottom: 16px;
+}
+
+.quickTitle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 1rem;
+	font-weight: 700;
+}
+
+.quickTitle svg {
+	color: var(--orange-600);
+}
+
+.quickTimes {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 10px;
+}
+
+.time {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.time span {
+	color: var(--ink-muted);
+	font-size: 0.75rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.time input {
+	width: 100%;
+	min-height: 48px;
+	padding: 0 12px;
+	border: 1.5px solid var(--line);
+	border-radius: 12px;
+	background: var(--surface);
+	font-size: 1.125rem;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.time input:focus {
+	outline: none;
+	border-color: var(--navy-900);
+	box-shadow: 0 0 0 3px rgba(244, 164, 78, 0.45);
+}
+
+.time input[aria-invalid="true"] {
+	border-color: var(--closed);
+}
+
+.dayPicker {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: 6px;
+	min-width: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.dayChip {
+	position: relative;
+	display: grid;
+	place-items: center;
+	height: 44px;
+	border: 1.5px solid var(--line);
+	border-radius: 12px;
+	color: var(--ink-muted);
+	font-weight: 700;
+	cursor: pointer;
+	transition: background 160ms, color 160ms, border-color 160ms;
+}
+
+.dayChip input {
+	position: absolute;
+	opacity: 0;
+}
+
+.dayChip:has(input:checked) {
+	border-color: var(--navy-900);
+	background: var(--navy-900);
+	color: var(--ink-on-dark);
+}
+
+.dayChip:has(input:focus-visible) {
+	outline: 3px solid var(--orange-500);
+	outline-offset: 2px;
+}
+
+.groupRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.groupBtn {
+	min-height: 36px;
+	padding: 0 12px;
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: var(--navy-50);
+	color: var(--ink);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+/* ---------- Week ---------- */
+
+.week {
+	display: grid;
+	gap: 10px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.day {
+	display: grid;
+	gap: 12px;
+	padding: 14px 16px;
+	border-radius: var(--radius-m);
+	background: var(--surface);
+	box-shadow: var(--shadow-1);
+}
+
+.dayClosed {
+	background: var(--navy-50);
+	box-shadow: none;
+}
+
+.dayClosed .dayName {
+	color: var(--ink-muted);
+}
+
+.dayHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.dayName {
+	font-size: 1.0625rem;
+	font-weight: 700;
+}
+
+.switchText {
+	min-width: 64px;
+}
+
+.ranges {
+	display: grid;
+	gap: 10px;
+}
+
+.rangeBlock {
+	display: grid;
+	gap: 4px;
+}
+
+.range {
+	display: grid;
+	grid-template-columns: 1fr 1fr auto;
+	align-items: end;
+	gap: 10px;
+}
+
+.midnight {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--navy-600);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+.dayActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 16px;
+}
+
+.textBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 40px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--navy-700);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.textBtn:hover {
+	color: var(--orange-600);
+}
+
+/* ---------- Save bar ---------- */
+
+.saveBar {
+	position: fixed;
+	right: 0;
+	bottom: calc(60px + env(safe-area-inset-bottom));
+	left: 0;
+	z-index: 15;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 16px;
+	background: var(--surface);
+	border-top: 1px solid var(--line);
+	box-shadow: 0 -6px 20px rgba(11, 14, 41, 0.08);
+	transform: translateY(150%);
+	visibility: hidden;
+	transition: transform 300ms var(--ease-out), visibility 0s linear 300ms;
+}
+
+.saveBarShow {
+	transform: none;
+	visibility: visible;
+	transition: transform 300ms var(--ease-out), visibility 0s;
+}
+
+.saveText {
+	color: var(--ink-muted);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+@media (min-width: 900px) {
+	.saveBar {
+		bottom: 16px;
+		left: calc(232px + 40px);
+		right: 40px;
+		max-width: 960px;
+		margin: 0 auto;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-m);
+	}
+
+	.week {
+		grid-template-columns: 1fr 1fr;
+	}
+}

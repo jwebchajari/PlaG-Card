@@ -1,0 +1,49 @@
+.stepper {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border-radius: var(--radius-pill);
+	background: var(--navy-50);
+	border: 1px solid var(--line);
+}
+
+.btn {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	color: var(--ink);
+	box-shadow: var(--shadow-1);
+	transition: transform 140ms var(--ease-out), background 140ms;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.92);
+}
+
+.btn:disabled {
+	background: transparent;
+	box-shadow: none;
+	color: var(--navy-200);
+	cursor: not-allowed;
+}
+
+.value {
+	min-width: 32px;
+	text-align: center;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.small .btn {
+	width: 40px;
+	height: 40px;
+}
+
+.small .value {
+	min-width: 26px;
+}

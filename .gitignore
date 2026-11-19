@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local production check builds
+/.next-check/
+
+# PWA: next-pwa generates these on every build
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+database-debug.log
+
+# design tool runtime files (screenshots, caches)
+/.impeccable/review/
+/.impeccable/hook.cache.json
+/.impeccable/mocks/
+
+# editor
+/.vscode/

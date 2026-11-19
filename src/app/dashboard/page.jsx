@@ -2,87 +2,97 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import DashboardProductCard from "@/components/DashboardProductCard";
+import { useRouter } from "next/navigation";
+import { ChevronRight, LogOut, Store, ShieldCheck } from "lucide-react";
+import { useSession, logout, localLabel } from "@/lib/session";
+import { listLocales, requestAccess } from "@/lib/admin-data";
 import LoadingScreen from "@/components/Loading";
+import styles from "@/components/auth/auth.module.css";
 
-const LOCAL = process.env.NEXT_PUBLIC_LOCAL_NAME || "pinto-la-gula";
+/**
+ * After login:
+ * - one local and not superroot -> straight to its panel
+ * - several locales -> picker
+ * - superroot -> every local + Administración
+ * - no locales -> leaves an access request for the superroot
+ */
+export default function DashboardHome() {
+	const router = useRouter();
+	const session = useSession();
+	const perfil = session.perfil;
+	const [locales, setLocales] = useState(null); // [{ slug, nombre }]
+	const [pedido, setPedido] = useState("idle"); // idle | sent | error
 
-export default function Dashboard() {
-    const [comidas, setComidas] = useState({});
-    const [loading, setLoading] = useState(true);
+	useEffect(() => {
+		if (session.status === "anon") router.replace("/login");
+		if (session.status !== "ready") return;
 
-    // Cargar comidas del API
-    useEffect(() => {
-        async function load() {
-            try {
-                const res = await fetch("/api/locales/comidas");
+		if (perfil.superadmin) {
+			listLocales()
+				.then((all) => setLocales(all))
+				.catch(() => setLocales(perfil.locales.map((slug) => ({ slug, nombre: "" }))));
+			return;
+		}
+		if (perfil.locales.length === 1) {
+			router.replace(`/dashboard/${perfil.locales[0]}`);
+			return;
+		}
+		setLocales(perfil.locales.map((slug) => ({ slug, nombre: "" })));
+		if (perfil.locales.length === 0) {
+			requestAccess(session.user)
+				.then(() => setPedido("sent"))
+				.catch(() => setPedido("error"));
+		}
+	}, [session.status, session.user, perfil, router]);
 
-                if (!res.ok) {
-                    console.error("Error GET /api/locales/comidas:", res.status);
-                    return;
-                }
+	if (session.status !== "ready" || !locales) return <LoadingScreen label="Entrando..." />;
 
-                const data = await res.json();
-                setComidas(data || {});
-            } catch (err) {
-                console.error("Error cargando comidas:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
+	return (
+		<div className={styles.page}>
+			<div className={styles.card}>
+				<p className={styles.wordmark}>CardCloud</p>
+				<h1 className={styles.title}>{perfil.nombre ? `Hola, ${perfil.nombre}` : "Tus locales"}</h1>
 
-        load();
-    }, []);
+				{locales.length === 0 ? (
+					<p className={styles.lead}>
+						Tu usuario ({session.user.email}) todavía no tiene locales asignados.{" "}
+						{pedido === "sent" && "Ya le avisamos al administrador de CardCloud: cuando te dé acceso, volvé a entrar."}
+						{pedido === "error" && "Pedile al administrador de CardCloud que te dé acceso."}
+					</p>
+				) : (
+					<>
+						<p className={styles.lead}>Elegí qué local querés administrar.</p>
+						<ul className={styles.localList}>
+							{locales.map((l) => (
+								<li key={l.slug}>
+									<Link href={`/dashboard/${l.slug}`} className={styles.localItem}>
+										<span className={styles.localIcon}>
+											<Store size={20} aria-hidden="true" />
+										</span>
+										<span className={styles.localName}>{l.nombre || localLabel(l.slug)}</span>
+										<ChevronRight size={20} aria-hidden="true" />
+									</Link>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
 
-    // Borrar comida
-    async function handleDelete(id) {
-        if (!confirm("¿Seguro que querés borrar esta comida?")) return;
+				{perfil.superadmin && (
+					<Link href="/dashboard/admin" className={`${styles.localItem} ${styles.adminItem}`}>
+						<span className={styles.localIcon}>
+							<ShieldCheck size={20} aria-hidden="true" />
+						</span>
+						<span className={styles.localName}>Administración</span>
+						<ChevronRight size={20} aria-hidden="true" />
+					</Link>
+				)}
 
-        try {
-            const res = await fetch(`/api/locales/comidas/${id}`, {
-                method: "DELETE",
-            });
-
-            if (!res.ok) {
-                console.error("Error DELETE:", res.status);
-                alert("Error al borrar la comida");
-                return;
-            }
-
-            // Actualizar estado sin recargar
-            setComidas(prev => {
-                const nuevo = { ...prev };
-                delete nuevo[id];
-                return nuevo;
-            });
-
-        } catch (err) {
-            console.error("Error de red al borrar comida:", err);
-            alert("Error al borrar la comida");
-        }
-    }
-
-    if (loading) return      <LoadingScreen />;
-
-    return (
-        <div style={{ padding: 20, maxWidth: "1200px", margin: "0 auto" }}>
-            {/* GRID MODERNO */}
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
-                    gap: "20px",
-                }}
-            >
-                {Object.entries(comidas).map(([id, item]) => (
-                    <DashboardProductCard
-                        key={id}
-                        id={id}
-                        item={item}
-                        onDelete={handleDelete}
-                    />
-                ))}
-            </div>
-        </div>
-    );
+				<button type="button" className={styles.linkBtn} onClick={() => logout()}>
+					<LogOut size={16} aria-hidden="true" />
+					Cerrar sesión
+				</button>
+			</div>
+		</div>
+	);
 }
