@@ -72,7 +72,13 @@ export default function InfoSheet({ open, onClose, horarios, datos }) {
 
 			<p className={styles.infoLine}>
 				<Bike size={18} aria-hidden="true" />
-				Envío a domicilio: <strong>{envioLabel(datos.costoEnvio)}</strong>
+				{datos.opciones?.envio === false ? (
+					"Por ahora solo retiro en el local"
+				) : (
+					<>
+						Envío a domicilio: <strong>{envioLabel(datos.costoEnvio)}</strong>
+					</>
+				)}
 			</p>
 
 			{(ig || fb) && (

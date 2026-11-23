@@ -45,7 +45,7 @@ function Field({ id, label, error, optional, ...input }) {
 	);
 }
 
-export default function BuyerForm({ buyer, onChange, errors, alias, costoEnvio }) {
+export default function BuyerForm({ buyer, onChange, errors, alias, costoEnvio, aceptaEnvio = true, aceptaTransferencia = true }) {
 	const [copied, setCopied] = useState(false);
 
 	async function copyAlias() {
@@ -81,7 +81,7 @@ export default function BuyerForm({ buyer, onChange, errors, alias, costoEnvio }
 				onChange={(v) => onChange({ entrega: v })}
 				options={[
 					{ id: "retiro", label: "Retiro en el local", hint: "Sin cargo", Icon: Store },
-					{ id: "envio", label: "Envío a domicilio", hint: `Envío: ${envioLabel(costoEnvio).toLowerCase()}`, Icon: Bike },
+					...(aceptaEnvio ? [{ id: "envio", label: "Envío a domicilio", hint: `Envío: ${envioLabel(costoEnvio).toLowerCase()}`, Icon: Bike }] : []),
 				]}
 			/>
 
@@ -115,7 +115,7 @@ export default function BuyerForm({ buyer, onChange, errors, alias, costoEnvio }
 				onChange={(v) => onChange({ pago: v })}
 				options={[
 					{ id: "efectivo", label: "Efectivo", Icon: Banknote },
-					{ id: "transferencia", label: "Transferencia", Icon: Landmark },
+					...(aceptaTransferencia ? [{ id: "transferencia", label: "Transferencia", Icon: Landmark }] : []),
 				]}
 			/>
 

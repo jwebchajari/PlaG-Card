@@ -36,6 +36,11 @@ export const getLocal = cache(async function getLocal(local = LOCAL) {
 			alias: datos.alias || "",
 			// null = the owner has not set it (confirmed by WhatsApp); 0 = free delivery
 			costoEnvio: datos.costoEnvio === null || datos.costoEnvio === undefined || datos.costoEnvio === "" ? null : Number(datos.costoEnvio) || 0,
+			// Lo que no está guardado queda activo.
+			opciones: {
+				envio: datos.opciones?.envio !== false,
+				transferencia: datos.opciones?.transferencia !== false,
+			},
 			extras: {
 				carne: Number(datos.extras?.carne) || 0,
 				panEspecial: Number(datos.extras?.panEspecial) || 0,

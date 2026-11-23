@@ -26,7 +26,14 @@ export default function CheckoutApp({ menu, datos, horarios }) {
 	const stored = useCart();
 	const [ready, setReady] = useState(false);
 	const [estado, setEstado] = useState(null);
-	const [buyer, setBuyer] = useState({ nombre: "", entrega: "retiro", direccion: "", referencia: "", pago: "efectivo" });
+	const [savedBuyer, setBuyer] = useState({ nombre: "", entrega: "retiro", direccion: "", referencia: "", pago: "efectivo" });
+	const aceptaEnvio = datos.opciones?.envio !== false;
+	const aceptaTransferencia = datos.opciones?.transferencia !== false;
+	const buyer = {
+		...savedBuyer,
+		entrega: aceptaEnvio ? savedBuyer.entrega : "retiro",
+		pago: aceptaTransferencia ? savedBuyer.pago : "efectivo",
+	};
 	const [errors, setErrors] = useState({});
 	const [sent, setSent] = useState(false);
 	const formRef = useRef(null);
@@ -194,7 +201,7 @@ export default function CheckoutApp({ menu, datos, horarios }) {
 					</Link>
 				</section>
 
-				<BuyerForm buyer={buyer} onChange={updateBuyer} errors={errors} alias={datos.alias} costoEnvio={datos.costoEnvio} />
+				<BuyerForm buyer={buyer} onChange={updateBuyer} errors={errors} alias={datos.alias} costoEnvio={datos.costoEnvio} aceptaEnvio={aceptaEnvio} aceptaTransferencia={aceptaTransferencia} />
 
 				<dl className={styles.summary}>
 					{conEnvio && (
