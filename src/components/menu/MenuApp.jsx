@@ -8,6 +8,7 @@ import ProductRow from "./ProductRow";
 import ProductSheet from "./ProductSheet";
 import Spotlight from "./Spotlight";
 import InfoSheet from "./InfoSheet";
+import InstallBanner from "./InstallBanner";
 import CartBar from "./CartBar";
 import SiteFooter from "./SiteFooter";
 import VisitTracker from "./VisitTracker";
@@ -42,6 +43,8 @@ export default function MenuApp({ sections, datos, horarios, focusProduct = null
 		<>
 			<VisitTracker />
 			<Hero horarios={horarios} titleAsHeading={!focusProduct} onInfo={() => setInfoOpen(true)} />
+
+			<InstallBanner />
 
 			<CategoryNav sections={sections} />
 

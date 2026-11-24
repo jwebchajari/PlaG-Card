@@ -7,6 +7,7 @@ import InstallApp from "./InstallApp";
 import { SITE_NAME, SITE_CITY, instagramUrl, facebookUrl, mapsUrl, waNumber } from "@/lib/site";
 import logo from "../../../public/brand/logo-96.png";
 import styles from "./menu.module.css";
+import installStyles from "./install.module.css";
 
 export default function SiteFooter({ datos, onHours }) {
 	const ig = instagramUrl(datos.redes?.instagram);
@@ -24,7 +25,9 @@ export default function SiteFooter({ datos, onHours }) {
 							<p className={styles.footerCity}>Hamburguesas en {SITE_CITY}, Entre Ríos</p>
 						</div>
 					</div>
-					<InstallApp />
+					<div className={installStyles.desktopOnly}>
+						<InstallApp />
+					</div>
 				</div>
 
 				<ul className={styles.footerLinks}>
